@@ -7,3 +7,5 @@
 **/dist/
 **/nbdist/
 **/.nb-gradle/
+Client/nbproject/project.properties
+Server/nbproject/project.properties
