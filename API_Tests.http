@@ -1,0 +1,11 @@
+### URI base da API
+@apiurl = http://localhost:8080/chess/api/
+
+### 
+POST {{apiurl}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "nuno"
+}

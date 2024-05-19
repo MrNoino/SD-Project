@@ -11,7 +11,7 @@ public class ServerApplication extends Application {
     private Set<Object> singletons = new HashSet<Object>();
 
     public ServerApplication() {
-        singletons.add(new Chess());
+        singletons.add(new ChessResource());
     }
 
     @Override

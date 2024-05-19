@@ -1,0 +1,19 @@
+### URI base da API
+@apiurl = http://localhost:8080/chess/api
+
+### Join a client
+POST {{apiurl}}/clients/ HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "Nuno"
+}
+
+### Get all clients
+GET {{apiurl}}/clients/ HTTP/1.1
+Accept: application/json
+
+### Leave a client
+DELETE {{apiurl}}/clients/Nuno HTTP/1.1
+Accept: application/json
