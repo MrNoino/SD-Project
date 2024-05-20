@@ -1,4 +1,4 @@
-package client.view;
+ package client.view;
 
 import java.awt.*;
 import javax.swing.*;
@@ -32,8 +32,6 @@ public class ChessGUI extends JFrame {
     }
     
     public void setBoard(){
-        
-        
         for(int i = 0; i < 8; i++){
             board[6][i].setPiece(0, 0);
         }
