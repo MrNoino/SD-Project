@@ -51,19 +51,23 @@ public class ClientFrame extends JFrame {
     private JMenuItem saveMenuItem;
     private JMenuItem openMenuItem;
     
+    private JPanel panelBtns;
     private JButton observerButton;
     private JButton positionButton;
     private JButton rearrangeButton;
     private JButton cleanButton;
     private JButton flipButton;
-    
-    private JPanel panelBtns;
     // End of variables declaration     
 
     public ClientFrame() {
         initComponents();
         
-        
+        titleGame.setText("Please, enter a game.");
+        sendBtn.setEnabled(false);
+        messagesArea.setEnabled(false);
+        messageField.setEditable(false);
+        messageField.setEnabled(false);
+        panelBtns.setVisible(false);
     }
 
 
@@ -537,7 +541,15 @@ public class ClientFrame extends JFrame {
 
     private void observerButtonActionPerformed(ActionEvent evt) {                                               
         // TODO add your handling code here:
-    }                                              
+    }                                       
+
+    private void rearrangeButtonActionPerformed(ActionEvent evt) {                                                
+        // TODO add your handling code here:
+    }                                               
+
+    private void flipButtonActionPerformed(ActionEvent evt) {                                           
+        // TODO add your handling code here:
+    }                                          
 
     private void portFieldActionPerformed(ActionEvent evt) {                                          
         // TODO add your handling code here:
@@ -551,12 +563,21 @@ public class ClientFrame extends JFrame {
         messagesArea.setText("");
         messageField.setText("");
         infoField.setText("");
-        flexPanel.setVisible(false);
+        joinBtn.setEnabled(true);
+        
         ipField.setEditable(true);
         ipField.setEnabled(true);
         portField.setEditable(true);
         portField.setEnabled(true);
-        joinBtn.setEnabled(true);
+        nameField.setEditable(true);
+        nameField.setEnabled(true);
+        
+        titleGame.setText("Please, enter a game.");
+        panelBtns.setVisible(false);
+        messagesArea.setEnabled(false);
+        messageField.setEditable(false);
+        messageField.setEnabled(false);
+        sendBtn.setEnabled(false);
     }                                        
 
     private void joinBtnActionPerformed(ActionEvent evt) {                                        
@@ -586,28 +607,26 @@ public class ClientFrame extends JFrame {
 //        receiverThread.start();
 
         this.joinBtn.setEnabled(false);
-        this.flexPanel.setVisible(true);
         this.leaveBtn.setEnabled(true);
+        
         this.ipField.setEditable(false);
         this.ipField.setEnabled(false);
         this.portField.setEditable(false);
         this.portField.setEnabled(false);
+        this.nameField.setEditable(false);
+        this.nameField.setEnabled(false);
+        
+        
+        titleGame.setText("Game on.");
+        panelBtns.setVisible(true);
+        messagesArea.setEnabled(true);
+        messageField.setEditable(true);
+        messageField.setEnabled(true);
+        sendBtn.setEnabled(true);
 
-        if (nameField.getText().isEmpty()) {
-            this.nameField.requestFocus();
-        } else {
-            this.messageField.requestFocus();
-        }
-    }                                       
-
-    private void rearrangeButtonActionPerformed(ActionEvent evt) {                                                
-        // TODO add your handling code here:
-    }                                               
-
-    private void flipButtonActionPerformed(ActionEvent evt) {                                           
-        // TODO add your handling code here:
-    }                                          
-
+        this.messageField.requestFocus();
+    }
+    
     /**
      * @param args the command line arguments
      */
