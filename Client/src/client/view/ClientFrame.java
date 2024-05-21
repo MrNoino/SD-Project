@@ -57,9 +57,17 @@ public class ClientFrame extends JFrame {
     private JButton rearrangeButton;
     private JButton cleanButton;
     private JButton flipButton;
+    
+    private SquarePanel[][] board = new SquarePanel[8][8];
     // End of variables declaration     
 
     public ClientFrame() {
+        
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
+        setMinimumSize(new Dimension(1460,760));
+        setResizable(true);
+        
         initComponents();
         
         titleGame.setText("Please, enter a game.");
@@ -68,6 +76,18 @@ public class ClientFrame extends JFrame {
         messageField.setEditable(false);
         messageField.setEnabled(false);
         panelBtns.setVisible(false);
+        
+        SquarePanel.loadPieceImages();
+        chessBoard.setLayout(new GridLayout(8,8));
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                SquarePanel sqPanel = new SquarePanel(i, j, this);
+                sqPanel.setBackgroundGray((i + j) % 2);
+                board[i][j] = sqPanel;
+                chessBoard.add(sqPanel);
+
+            }
+        }
     }
 
 
@@ -111,11 +131,6 @@ public class ClientFrame extends JFrame {
         saveMenuItem = new JMenuItem();
         saveAsMenuItem = new JMenuItem();
         exitMenuItem = new JMenuItem();
-
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
-        setMinimumSize(new Dimension(1460,760));
-        setResizable(true);
 
         mainPainel.setAutoscrolls(true);
 
@@ -277,7 +292,7 @@ public class ClientFrame extends JFrame {
         chessBoard.setLayout(chessBoardLayout);
         chessBoardLayout.setHorizontalGroup(
             chessBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 496, Short.MAX_VALUE)
+            .addGap(0, 396, Short.MAX_VALUE)
         );
         chessBoardLayout.setVerticalGroup(
             chessBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -325,20 +340,20 @@ public class ClientFrame extends JFrame {
             gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(gameBoardLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(gameBoardLayout.createSequentialGroup()
                         .addComponent(player2SpareBoard, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(namePlayer2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(gameBoardLayout.createSequentialGroup()
-                        .addGroup(gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(gameBoardLayout.createSequentialGroup()
                                 .addGap(132, 132, 132)
-                                .addComponent(chessBoard, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(namePlayer1, javax.swing.GroupLayout.DEFAULT_SIZE, 632, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(chessBoard, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(namePlayer1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(player1SpareBoard, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         gameBoardLayout.setVerticalGroup(
             gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -558,6 +573,20 @@ public class ClientFrame extends JFrame {
     private void leaveBtnActionPerformed(ActionEvent evt) {                                         
 
         // terminar conexão
+        
+        chessBoard.removeAll();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                SquarePanel sqPanel = new SquarePanel(i, j, this);
+                sqPanel.setBackgroundGray((i + j) % 2);
+                board[i][j] = sqPanel;
+                chessBoard.add(sqPanel);
+
+            }
+        }
+        
+        player1SpareBoard.setBackground(null);
+        player2SpareBoard.setBackground(null);
 
         leaveBtn.setEnabled(false);
         messagesArea.setText("");
@@ -623,8 +652,58 @@ public class ClientFrame extends JFrame {
         messageField.setEditable(true);
         messageField.setEnabled(true);
         sendBtn.setEnabled(true);
+        
+        
+        chessBoard.removeAll();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                SquarePanel sqPanel = new SquarePanel(i, j, this);
+                sqPanel.setBackgroundColor((i + j) % 2);
+                board[i][j] = sqPanel;
+                chessBoard.add(sqPanel);
+
+            }
+        }
+        
+        player1SpareBoard.setBackground(new Color(108,108,195));
+        player2SpareBoard.setBackground(new Color(206,206,255));
+        
+        setBoard();
 
         this.messageField.requestFocus();
+    }
+    
+    
+
+    public void selected(int x, int y) {
+        System.out.printf("mouse pressed at: %d - %d\n", x, y);
+    }
+    
+    public void setBoard(){
+        for(int i = 0; i < 8; i++){
+            board[6][i].setPiece(0, 0);
+        }
+        board[7][0].setPiece(0, 3);
+        board[7][1].setPiece(0, 1);
+        board[7][2].setPiece(0, 2);
+        board[7][3].setPiece(0, 4);
+        board[7][4].setPiece(0, 5);
+        board[7][5].setPiece(0, 2);
+        board[7][6].setPiece(0, 1);
+        board[7][7].setPiece(0, 3);
+
+        
+        for(int i = 0; i < 8; i++){
+            board[1][i].setPiece(1, 0);
+        }
+        board[0][0].setPiece(1, 3);
+        board[0][1].setPiece(1, 1);
+        board[0][2].setPiece(1, 2);
+        board[0][3].setPiece(1, 4);
+        board[0][4].setPiece(1, 5);
+        board[0][5].setPiece(1, 2);
+        board[0][6].setPiece(1, 1);
+        board[0][7].setPiece(1, 3);
     }
     
     /**
