@@ -1,13 +1,13 @@
 package model;
 
-public class Client {
+public class User {
     private String username;
     private boolean player;
     private byte position;
     
-    public Client(){}
+    public User(){}
     
-    public Client(String username, boolean player, byte position){
+    public User(String username, boolean player, byte position){
         this.username = username;
         this.player = player;
         this.position = position;
