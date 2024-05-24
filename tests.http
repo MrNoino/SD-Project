@@ -6,29 +6,23 @@ GET {{apiurl}}/ HTTP/1.1
 Accept: application/json
 
 ### Join a client
-POST {{apiurl}}/clients/ HTTP/1.1
+POST {{apiurl}}/users/ HTTP/1.1
 Accept: application/json
 Content-Type: application/json
 
 {
-<<<<<<< Updated upstream
     "username": "Karine"
-=======
-    "username": "Nudfgno"
->>>>>>> Stashed changes
 }
 
 ### Get all clients
-GET {{apiurl}}/clients/ HTTP/1.1
+GET {{apiurl}}/users/ HTTP/1.1
 Accept: application/json
 
 ### Leave a client
-DELETE {{apiurl}}/clients/Karine HTTP/1.1
-<<<<<<< Updated upstream
-Accept: application/json
+DELETE {{apiurl}}/users/Karine HTTP/1.1
 
 ### Becoming a player/espectator
-PUT {{apiurl}}/clients/ HTTP/1.1
+PUT {{apiurl}}/users/ HTTP/1.1
 Accept: application/json
 Content-Type: application/json
 
@@ -36,6 +30,4 @@ Content-Type: application/json
     "username": "Nuno",
     "player": "true"
 }
-=======
-Accept: application/json
->>>>>>> Stashed changes
+
