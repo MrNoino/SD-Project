@@ -61,7 +61,7 @@ public class ChessResource{
     
     
     // *** CLIENTS ***
-    @Path("clients")
+    @Path("users")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
