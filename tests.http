@@ -11,7 +11,11 @@ Accept: application/json
 Content-Type: application/json
 
 {
+<<<<<<< Updated upstream
     "username": "Karine"
+=======
+    "username": "Nudfgno"
+>>>>>>> Stashed changes
 }
 
 ### Get all clients
@@ -20,6 +24,7 @@ Accept: application/json
 
 ### Leave a client
 DELETE {{apiurl}}/clients/Karine HTTP/1.1
+<<<<<<< Updated upstream
 Accept: application/json
 
 ### Becoming a player/espectator
@@ -31,3 +36,6 @@ Content-Type: application/json
     "username": "Nuno",
     "player": "true"
 }
+=======
+Accept: application/json
+>>>>>>> Stashed changes
