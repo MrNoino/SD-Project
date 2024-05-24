@@ -1,13 +1,17 @@
 ### URI base da API
 @apiurl = http://localhost:8080/chess/api
 
+### Get chess
+GET {{apiurl}}/ HTTP/1.1
+Accept: application/json
+
 ### Join a client
 POST {{apiurl}}/clients/ HTTP/1.1
 Accept: application/json
 Content-Type: application/json
 
 {
-    "username": "Nuno"
+    "username": "Karine"
 }
 
 ### Get all clients
@@ -15,5 +19,15 @@ GET {{apiurl}}/clients/ HTTP/1.1
 Accept: application/json
 
 ### Leave a client
-DELETE {{apiurl}}/clients/Nuno HTTP/1.1
+DELETE {{apiurl}}/clients/Karine HTTP/1.1
 Accept: application/json
+
+### Becoming a player/espectator
+PUT {{apiurl}}/clients/ HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "Nuno",
+    "player": "true"
+}

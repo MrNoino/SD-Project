@@ -8,7 +8,7 @@ public class ManageClients {
     
     public ManageClients(){
         this.clients = new ArrayList<Client>();
-        this.addClient(new Client("Nuno", true, (byte) 1));
+        this.addClient(new Client("Mr.Noino", true, (byte) 1));
         this.addClient(new Client("Karine", true, (byte) 2));
         this.addClient(new Client("Windoh", false, (byte) 0));
     }
@@ -47,6 +47,16 @@ public class ManageClients {
         //set if it is player by checking if are less than 2 players
         client.setPlayer(this.getNumberOfPlayers() < 2);
         synchronized(this.clients){
+            if(client.isPlayer()){
+                boolean firstPositionTaken = false;
+                for(Client c : this.clients){
+                    if(c.getPosition() == 1){
+                        firstPositionTaken = true;
+                        break;
+                    }
+                }
+                client.setPosition((firstPositionTaken) ? (byte) 2 : (byte) 1);
+            }
             return this.clients.add(client);
         }
     }
@@ -59,6 +69,23 @@ public class ManageClients {
                 }
             }
         }
+        return false;
+    }
+    
+    public synchronized boolean changeStatus(String username, boolean isPlayer){
+        if(isPlayer){
+            if(this.getNumberOfPlayers() == 2){
+                return false;
+            }
+        }
+        
+        for(int i = 0; i < this.clients.size(); i++){
+            if(this.clients.get(i).getUsername().equals(username)){
+                this.clients.get(i).setPlayer(isPlayer);
+                return true;
+            }
+        }
+        
         return false;
     }
     

@@ -5,6 +5,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -14,6 +15,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import model.Chess;
 import model.Client;
+import model.Piece;
 
 @Path("")
 public class ChessResource{
@@ -25,11 +27,48 @@ public class ChessResource{
         this.manageClients = new ManageClients();
     }
     
+    // *** CHESS ***
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Chess getChess(){
+        return this.chess;
+    }
+    
+    // *** PIECES ***
+    @Path("pieces")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addPiece(Piece piece){
+        
+        return Response.ok().build();
+    }
+    
+    @Path("pieces")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response movePiece(Piece piece){
+        return Response.ok().build();
+    }
+    
+    @Path("pieces")
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response removePiece(Piece piece){
+        return Response.ok().build();
+    }
+    
+    
+    
+    // *** CLIENTS ***
     @Path("clients")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Client join(Client client){
+        if(client.getUsername().isEmpty()){
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
         if(!this.manageClients.addClient(client)){
             throw new WebApplicationException(Response.Status.CONFLICT);
         }
@@ -54,4 +93,17 @@ public class ChessResource{
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
     }
+    
+    @Path("clients")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response changeStatus(Client client){
+        if(manageClients.changeStatus(client.getUsername(), client.isPlayer())){
+            return Response.noContent().build();
+        }else{
+            throw new WebApplicationException(Response.Status.CONFLICT);
+        }
+    }
+    
+    
 }
