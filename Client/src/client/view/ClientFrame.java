@@ -24,6 +24,7 @@ import client.model.User;
  */
 public class ClientFrame extends JFrame {
     
+    // <editor-fold defaultstate="collapsed" desc="Variaveis...">
     // Variables declaration - do not modify
     private JPanel mainPainel; 
     
@@ -35,6 +36,11 @@ public class ClientFrame extends JFrame {
     private JPanel player2SpareBoard;
     private JLabel namePlayer1;
     private JLabel namePlayer2;
+    
+    private JPanel observePanel;
+    private JScrollPane observeScroll;
+    private JTextField observeField;
+    private JLabel observeLabel;
     
     private JPanel chatPanel;
     private JScrollPane jScrollArea;
@@ -67,7 +73,7 @@ public class ClientFrame extends JFrame {
     private JButton rearrangeButton;
     private JButton cleanButton;
     private JButton flipButton;
-    
+        
     private SquarePanel[][] board = new SquarePanel[8][8];
     
     static Client client;
@@ -75,14 +81,15 @@ public class ClientFrame extends JFrame {
     
     private User myUser;
     
-    // End of variables declaration     
+    // End of variables declaration
+    //</editor-fold>
 
     public ClientFrame() {
         
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
-        setSize(new Dimension(1460,760));
-        setMinimumSize(new Dimension(1460,760));
+//        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
+        setMinimumSize(new Dimension(1400,840));
         setResizable(true);
         
         initComponents();
@@ -108,45 +115,52 @@ public class ClientFrame extends JFrame {
             }
         }
         
-//        client = ClientBuilder.newClient();
-//        client.close();
     }
 
 
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+    // <editor-fold defaultstate="collapsed" desc="initComponents()">
     private void initComponents() {
 
         mainPainel = new JPanel();
+        
         chatPanel = new JPanel();
-        sendBtn = new JButton();
         messageField = new JTextField();
         jScrollArea = new JScrollPane();
         messagesArea = new JTextArea();
         msgLabel = new JLabel();
+        sendBtn = new JButton();
         infoField = new JLabel();
+        
         configPanel = new JPanel();
-        portField = new JTextField();
         ipField = new JTextField();
-        portLabel = new JLabel();
         ipLabel = new JLabel();
-        leaveBtn = new JButton();
-        joinBtn = new JButton();
+        portField = new JTextField();
+        portLabel = new JLabel();
         nameLabel = new JLabel();
         nameField = new JTextField();
-        flexPanel = new JPanel();
+        leaveBtn = new JButton();
+        joinBtn = new JButton();
+        
         titleGame = new JLabel();
+        flexPanel = new JPanel();
         gameBoard = new JPanel();
         chessBoard = new JPanel();
         player2SpareBoard = new JPanel();
         player1SpareBoard = new JPanel();
         namePlayer2 = new JLabel();
         namePlayer1 = new JLabel();
+        
+        observePanel = new JPanel();
+        observeLabel = new JLabel();
+        observeScroll = new JScrollPane();
+        observeField = new JTextField();        
         panelBtns = new JPanel();
         observerButton = new JButton();
         rearrangeButton = new JButton();
         cleanButton = new JButton();
         positionButton = new JButton();
         flipButton = new JButton();
+        
         menuBar = new JMenuBar();
         fileMenu = new JMenu();
         openMenuItem = new JMenuItem();
@@ -154,6 +168,7 @@ public class ClientFrame extends JFrame {
         saveAsMenuItem = new JMenuItem();
         exitMenuItem = new JMenuItem();
 
+        
         mainPainel.setAutoscrolls(true);
 
         chatPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -264,7 +279,7 @@ public class ClientFrame extends JFrame {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(configPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(configPanelLayout.createSequentialGroup()
-                        .addComponent(portField, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
+                        .addComponent(portField, GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nameLabel, GroupLayout.PREFERRED_SIZE, 37, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -273,7 +288,7 @@ public class ClientFrame extends JFrame {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(configPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                     .addComponent(leaveBtn, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(joinBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(joinBtn, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         configPanelLayout.setVerticalGroup(
@@ -288,7 +303,7 @@ public class ClientFrame extends JFrame {
                 .addGroup(configPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(portField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(portLabel)
-                    .addComponent(leaveBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(leaveBtn, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(nameLabel)
                     .addComponent(nameField, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -359,41 +374,41 @@ public class ClientFrame extends JFrame {
         GroupLayout gameBoardLayout = new GroupLayout(gameBoard);
         gameBoard.setLayout(gameBoardLayout);
         gameBoardLayout.setHorizontalGroup(
-            gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(gameBoardLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                     .addGroup(gameBoardLayout.createSequentialGroup()
-                        .addComponent(player2SpareBoard, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(namePlayer2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(player2SpareBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(namePlayer2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(gameBoardLayout.createSequentialGroup()
-                        .addGroup(gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                             .addGroup(gameBoardLayout.createSequentialGroup()
                                 .addGap(132, 132, 132)
-                                .addComponent(chessBoard, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(namePlayer1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(player1SpareBoard, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(chessBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                            .addComponent(namePlayer1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(player1SpareBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         gameBoardLayout.setVerticalGroup(
-            gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(gameBoardLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(gameBoardLayout.createSequentialGroup()
-                        .addComponent(namePlayer2, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(namePlayer2, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                             .addGroup(gameBoardLayout.createSequentialGroup()
                                 .addGap(406, 406, 406)
-                                .addComponent(namePlayer1, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(player1SpareBoard, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)))
-                    .addGroup(gameBoardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(chessBoard, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(player2SpareBoard, javax.swing.GroupLayout.PREFERRED_SIZE, 426, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(namePlayer1, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE))
+                            .addComponent(player1SpareBoard, GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)))
+                    .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                        .addComponent(chessBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(player2SpareBoard, GroupLayout.PREFERRED_SIZE, 426, GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         BorderLayout gameLayout = new BorderLayout();
@@ -402,6 +417,41 @@ public class ClientFrame extends JFrame {
         JPanel at = new JPanel();
         at.add(gameBoard);
         flexPanel.add(at, BorderLayout.CENTER);
+        
+        observeLabel.setFont(new Font("Gill Sans MT", 0, 12)); // NOI18N
+        observeLabel.setText("Observers: ");
+
+        observeScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        observeField.setEditable(false);
+        observeField.setFocusable(false);
+        observeField.setFont(new Font("Gill Sans MT", 0, 14)); // NOI18N
+        observeField.setBackground(new Color(220,224,230));
+        observeScroll.setViewportView(observeField);
+        observeScroll.setEnabled(false);
+        observeScroll.setFocusable(false);
+        
+        GroupLayout observePanelLayout = new GroupLayout(observePanel);
+        observePanel.setLayout(observePanelLayout);
+        observePanelLayout.setHorizontalGroup(
+            observePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(GroupLayout.Alignment.TRAILING, observePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(observeLabel, GroupLayout.PREFERRED_SIZE, 58, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(observeScroll, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+                .addContainerGap())
+        );
+        observePanelLayout.setVerticalGroup(
+            observePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(GroupLayout.Alignment.TRAILING, observePanelLayout.createSequentialGroup()
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(observePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                    .addComponent(observeScroll, GroupLayout.DEFAULT_SIZE,  54, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(observeLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        flexPanel.add(observePanel, BorderLayout.SOUTH);
 
         GroupLayout mainPainelLayout = new GroupLayout(mainPainel);
         mainPainel.setLayout(mainPainelLayout);
@@ -413,7 +463,8 @@ public class ClientFrame extends JFrame {
                     .addComponent(chatPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(configPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(flexPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(flexPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         mainPainelLayout.setVerticalGroup(
             mainPainelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -539,10 +590,17 @@ public class ClientFrame extends JFrame {
         pack();
     }// </editor-fold>                        
 
-    private void exitMenuItemActionPerformed(ActionEvent evt) {                                             
+    // <editor-fold defaultstate="collapsed" desc="exitMenuItemActionPerformed(ActionEvent evt)">
+    private void exitMenuItemActionPerformed(ActionEvent evt) {
+        
+        if(myUser != null){
+            leaveBtnActionPerformed(null);
+        }
+        
         System.exit(0);
-    }                                            
+    }// </editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc="sendBtnActionPerformed(ActionEvent evt)">
     private void sendBtnActionPerformed(ActionEvent evt) {                                        
 
         this.sendBtn.setEnabled(false);
@@ -567,31 +625,33 @@ public class ClientFrame extends JFrame {
         }
         this.sendBtn.setEnabled(true);
         this.messageField.requestFocus();
-    }                                       
+    }// </editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc="messageFieldKeyTyped(KeyEvent evt)">
     private void messageFieldKeyTyped(KeyEvent evt) {                                      
         // TODO add your handling code here:
         if (evt.getKeyChar() == '\n') {
             sendBtnActionPerformed(null);
         }
-    }                                     
+    }// </editor-fold>
 
     private void observerButtonActionPerformed(ActionEvent evt) {                                               
         // TODO add your handling code here:
-    }                                       
+    }
 
     private void rearrangeButtonActionPerformed(ActionEvent evt) {                                                
         // TODO add your handling code here:
-    }                                               
+    }
 
     private void flipButtonActionPerformed(ActionEvent evt) {                                           
         // TODO add your handling code here:
-    }                                          
+    }
 
     private void portFieldActionPerformed(ActionEvent evt) {                                          
         // TODO add your handling code here:
-    }                                         
+    }
 
+    // <editor-fold defaultstate="collapsed" desc="leaveBtnActionPerformed(ActionEvent evt)">
     private void leaveBtnActionPerformed(ActionEvent evt) {                                         
 
         // terminar conexão
@@ -601,6 +661,8 @@ public class ClientFrame extends JFrame {
                               .delete();
         int codeResp = resp.getStatus();
         resp.close();
+        
+        System.out.println(resp.toString());
         
         if(codeResp == 204){
             chessBoard.removeAll();
@@ -616,6 +678,9 @@ public class ClientFrame extends JFrame {
 
             player1SpareBoard.setBackground(null);
             player2SpareBoard.setBackground(null);
+            namePlayer1.setText("Player 1");
+            namePlayer2.setText("Player 2");
+            observeField.setText(null);
 
             leaveBtn.setEnabled(false);
             messagesArea.setText("");
@@ -640,8 +705,9 @@ public class ClientFrame extends JFrame {
             infoField.setText("Erro desconhecido");
         }
         client.close();
-    }                                        
+    }// </editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc="joinBtnActionPerformed(ActionEvent evt)">
     private void joinBtnActionPerformed(ActionEvent evt) { 
         
         client = ClientBuilder.newClient();
@@ -662,6 +728,7 @@ public class ClientFrame extends JFrame {
         if(codeResp == 200){
             
             List<User> users = resp.readEntity(new GenericType<List<User>>(){});
+            String observersName = "";
             
             for (User user : users) {
                 if(user.isPlayer()){
@@ -670,11 +737,15 @@ public class ClientFrame extends JFrame {
                     } else{
                         namePlayer2.setText(user.getUsername());
                     }
+                } else{
+                    observersName += "|  "+user.getUsername()+"  |";
                 }
                 if(user.getUsername().equals(newCliente.getUsername())){
                     myUser = user;
                 }   
             }
+            
+            observeField.setText(observersName);
             
             if(!myUser.isPlayer()){
                 observerButton.setText("Turn player");
@@ -723,8 +794,9 @@ public class ClientFrame extends JFrame {
             }
         
         resp.close();
-    }
+    }// </editor-fold>
     
+    // <editor-fold defaultstate="collapsed" desc="startGame()">
     private void startGame() {
         Response resp = client.target(baseUri)
             .request()
@@ -762,12 +834,13 @@ public class ClientFrame extends JFrame {
         else
             infoField.setText("Erro ao receber jogo.");
         
-    }
+    }// </editor-fold>
 
     public void selected(int x, int y) {
         System.out.printf("mouse pressed at: %d - %d\n", x, y);
     }
     
+    // <editor-fold defaultstate="collapsed" desc="setBoard()">
     public void setBoard(){
         for(int i = 0; i < 8; i++){
             board[6][i].setPiece(0, 0);
@@ -793,8 +866,9 @@ public class ClientFrame extends JFrame {
         board[0][5].setPiece(1, 2);
         board[0][6].setPiece(1, 1);
         board[0][7].setPiece(1, 3);
-    }
+    }// </editor-fold>
     
+    // <editor-fold defaultstate="collapsed" desc="public static void main(String args[])">
     /**
      * @param args the command line arguments
      */
@@ -821,9 +895,6 @@ public class ClientFrame extends JFrame {
             java.util.logging.Logger.getLogger(ClientFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
 
         /* Create and display the form */
         EventQueue.invokeLater(new Runnable() {
@@ -831,7 +902,7 @@ public class ClientFrame extends JFrame {
                 new ClientFrame().setVisible(true);
             }
         });
-    }              
+    }//</editor-fold>       
 
 
 }
