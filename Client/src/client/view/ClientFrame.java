@@ -591,7 +591,7 @@ public class ClientFrame extends JFrame {
     private void leaveBtnActionPerformed(ActionEvent evt) {                                         
 
         // terminar conexão
-        Response resp = client.target(baseUri+"clients/")
+        Response resp = client.target(baseUri+"users/")
                               .path(cliente.getUsername())
                               .request()
                               .delete();
@@ -646,7 +646,7 @@ public class ClientFrame extends JFrame {
         User newCliente = new User();
         newCliente.setUsername(nameField.getText());
         // inicia conexão
-        Response resp = client.target(baseUri+"clients/")
+        Response resp = client.target(baseUri+"users/")
             .request()
             .accept("application/json")
             .header("Content-Type", "application/json")
@@ -676,7 +676,7 @@ public class ClientFrame extends JFrame {
             this.nameField.setEditable(false);
             this.nameField.setEnabled(false);
 
-
+//novo pedido
             titleGame.setText("Game on.");
             panelBtns.setVisible(true);
             messagesArea.setEnabled(true);
