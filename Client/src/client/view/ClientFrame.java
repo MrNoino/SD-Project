@@ -7,6 +7,12 @@ import java.util.Date;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
+
+import client.model.User;
 
 /**
  *
@@ -59,17 +65,26 @@ public class ClientFrame extends JFrame {
     private JButton flipButton;
     
     private SquarePanel[][] board = new SquarePanel[8][8];
+    
+    static Client client;
+    static String baseUri;
+    
+    private User cliente;
+    
     // End of variables declaration     
 
     public ClientFrame() {
         
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
+//        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
+        setPreferredSize(new Dimension(1460,760));
         setMinimumSize(new Dimension(1460,760));
         setResizable(true);
         
         initComponents();
         
+        ipField.setText("localhost");
+        portField.setText("8080");
         titleGame.setText("Please, enter a game.");
         sendBtn.setEnabled(false);
         messagesArea.setEnabled(false);
@@ -88,6 +103,9 @@ public class ClientFrame extends JFrame {
 
             }
         }
+        
+//        client = ClientBuilder.newClient();
+//        client.close();
     }
 
 
@@ -573,45 +591,128 @@ public class ClientFrame extends JFrame {
     private void leaveBtnActionPerformed(ActionEvent evt) {                                         
 
         // terminar conexão
+        Response resp = client.target(baseUri+"clients/")
+                              .path(cliente.getUsername())
+                              .request()
+                              .delete();
+        int codeResp = resp.getStatus();
+        resp.close();
         
-        chessBoard.removeAll();
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                SquarePanel sqPanel = new SquarePanel(i, j, this);
-                sqPanel.setBackgroundGray((i + j) % 2);
-                board[i][j] = sqPanel;
-                chessBoard.add(sqPanel);
+        if(codeResp == 204){
+            chessBoard.removeAll();
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    SquarePanel sqPanel = new SquarePanel(i, j, this);
+                    sqPanel.setBackgroundGray((i + j) % 2);
+                    board[i][j] = sqPanel;
+                    chessBoard.add(sqPanel);
 
+                }
             }
-        }
-        
-        player1SpareBoard.setBackground(null);
-        player2SpareBoard.setBackground(null);
 
-        leaveBtn.setEnabled(false);
-        messagesArea.setText("");
-        messageField.setText("");
-        infoField.setText("");
-        joinBtn.setEnabled(true);
-        
-        ipField.setEditable(true);
-        ipField.setEnabled(true);
-        portField.setEditable(true);
-        portField.setEnabled(true);
-        nameField.setEditable(true);
-        nameField.setEnabled(true);
-        
-        titleGame.setText("Please, enter a game.");
-        panelBtns.setVisible(false);
-        messagesArea.setEnabled(false);
-        messageField.setEditable(false);
-        messageField.setEnabled(false);
-        sendBtn.setEnabled(false);
+            player1SpareBoard.setBackground(null);
+            player2SpareBoard.setBackground(null);
+
+            leaveBtn.setEnabled(false);
+            messagesArea.setText("");
+            messageField.setText("");
+            infoField.setText("");
+            joinBtn.setEnabled(true);
+
+            ipField.setEditable(true);
+            ipField.setEnabled(true);
+            portField.setEditable(true);
+            portField.setEnabled(true);
+            nameField.setEditable(true);
+            nameField.setEnabled(true);
+
+            titleGame.setText("Please, enter a game.");
+            panelBtns.setVisible(false);
+            messagesArea.setEnabled(false);
+            messageField.setEditable(false);
+            messageField.setEnabled(false);
+            sendBtn.setEnabled(false);
+        } else{
+            infoField.setText("Erro desconhecido");
+        }
+        client.close();
     }                                        
 
-    private void joinBtnActionPerformed(ActionEvent evt) {                                        
+    private void joinBtnActionPerformed(ActionEvent evt) { 
+        
+        client = ClientBuilder.newClient();
+        baseUri = "http://"+ ipField.getText() + ":" + portField.getText() + "/chess/api/";
 
+        User newCliente = new User();
+        newCliente.setUsername(nameField.getText());
         // inicia conexão
+        Response resp = client.target(baseUri+"clients/")
+            .request()
+            .accept("application/json")
+            .header("Content-Type", "application/json")
+            .post(Entity.json(newCliente));
+        
+        int codeResp = resp.getStatus();
+        
+        System.out.println(resp.toString());
+                
+        if(codeResp == 200){
+            cliente = resp.readEntity(User.class);
+            if(cliente.isPlayer()){
+                if(cliente.getPosition() == 2){
+                    namePlayer2.setText(cliente.getUsername());
+                } else {
+                    namePlayer1.setText(cliente.getUsername());
+                }
+            }
+            
+            this.joinBtn.setEnabled(false);
+            this.leaveBtn.setEnabled(true);
+
+            this.ipField.setEditable(false);
+            this.ipField.setEnabled(false);
+            this.portField.setEditable(false);
+            this.portField.setEnabled(false);
+            this.nameField.setEditable(false);
+            this.nameField.setEnabled(false);
+
+
+            titleGame.setText("Game on.");
+            panelBtns.setVisible(true);
+            messagesArea.setEnabled(true);
+            messageField.setEditable(true);
+            messageField.setEnabled(true);
+            sendBtn.setEnabled(true);
+
+
+            chessBoard.removeAll();
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    SquarePanel sqPanel = new SquarePanel(i, j, this);
+                    sqPanel.setBackgroundColor((i + j) % 2);
+                    board[i][j] = sqPanel;
+                    chessBoard.add(sqPanel);
+
+                }
+            }
+
+            player1SpareBoard.setBackground(new Color(108,108,195));
+            player2SpareBoard.setBackground(new Color(206,206,255));
+
+            setBoard();
+
+            this.messageField.requestFocus();
+            
+        }
+        else
+            if( codeResp == 409){
+                infoField.setText("Nome inválido.");
+            } else {
+                infoField.setText("Erro desconhecido: "+codeResp);
+            }
+        
+        resp.close();
+        
 
 //        receiverThread = new Thread(new Runnable() {
 //            @Override
@@ -634,43 +735,6 @@ public class ClientFrame extends JFrame {
 //            }
 //        });
 //        receiverThread.start();
-
-        this.joinBtn.setEnabled(false);
-        this.leaveBtn.setEnabled(true);
-        
-        this.ipField.setEditable(false);
-        this.ipField.setEnabled(false);
-        this.portField.setEditable(false);
-        this.portField.setEnabled(false);
-        this.nameField.setEditable(false);
-        this.nameField.setEnabled(false);
-        
-        
-        titleGame.setText("Game on.");
-        panelBtns.setVisible(true);
-        messagesArea.setEnabled(true);
-        messageField.setEditable(true);
-        messageField.setEnabled(true);
-        sendBtn.setEnabled(true);
-        
-        
-        chessBoard.removeAll();
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                SquarePanel sqPanel = new SquarePanel(i, j, this);
-                sqPanel.setBackgroundColor((i + j) % 2);
-                board[i][j] = sqPanel;
-                chessBoard.add(sqPanel);
-
-            }
-        }
-        
-        player1SpareBoard.setBackground(new Color(108,108,195));
-        player2SpareBoard.setBackground(new Color(206,206,255));
-        
-        setBoard();
-
-        this.messageField.requestFocus();
     }
     
     
