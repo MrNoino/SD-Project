@@ -1,5 +1,7 @@
 package client.view;
 
+import client.model.Chess;
+import client.model.Piece;
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -11,6 +13,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.GenericType;
+import java.util.List;
 
 import client.model.User;
 
@@ -69,7 +73,7 @@ public class ClientFrame extends JFrame {
     static Client client;
     static String baseUri;
     
-    private User cliente;
+    private User myUser;
     
     // End of variables declaration     
 
@@ -77,7 +81,7 @@ public class ClientFrame extends JFrame {
         
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 //        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
-        setPreferredSize(new Dimension(1460,760));
+        setSize(new Dimension(1460,760));
         setMinimumSize(new Dimension(1460,760));
         setResizable(true);
         
@@ -592,7 +596,7 @@ public class ClientFrame extends JFrame {
 
         // terminar conexão
         Response resp = client.target(baseUri+"users/")
-                              .path(cliente.getUsername())
+                              .path(myUser.getUsername())
                               .request()
                               .delete();
         int codeResp = resp.getStatus();
@@ -649,7 +653,6 @@ public class ClientFrame extends JFrame {
         Response resp = client.target(baseUri+"users/")
             .request()
             .accept("application/json")
-            .header("Content-Type", "application/json")
             .post(Entity.json(newCliente));
         
         int codeResp = resp.getStatus();
@@ -657,15 +660,39 @@ public class ClientFrame extends JFrame {
         System.out.println(resp.toString());
                 
         if(codeResp == 200){
-            cliente = resp.readEntity(User.class);
-            if(cliente.isPlayer()){
-                if(cliente.getPosition() == 2){
-                    namePlayer2.setText(cliente.getUsername());
-                } else {
-                    namePlayer1.setText(cliente.getUsername());
+            
+            List<User> users = resp.readEntity(new GenericType<List<User>>(){});
+            
+            for (User user : users) {
+                if(user.isPlayer()){
+                    if(user.getPosition() == 1){
+                        namePlayer1.setText(user.getUsername());
+                    } else{
+                        namePlayer2.setText(user.getUsername());
+                    }
                 }
+                if(user.getUsername().equals(newCliente.getUsername())){
+                    myUser = user;
+                }   
             }
             
+            if(!myUser.isPlayer()){
+                observerButton.setText("Turn player");
+                cleanButton.setVisible(false);
+                flipButton.setVisible(false);
+                rearrangeButton.setVisible(false);
+                positionButton.setVisible(false);
+            }
+            else{
+                observerButton.setText("Turn observer");
+                cleanButton.setVisible(true);
+                flipButton.setVisible(true);
+                rearrangeButton.setVisible(true);
+                positionButton.setVisible(true);
+            }
+            panelBtns.setVisible(true);
+            
+            //bloqueia form de conexão
             this.joinBtn.setEnabled(false);
             this.leaveBtn.setEnabled(true);
 
@@ -676,14 +703,41 @@ public class ClientFrame extends JFrame {
             this.nameField.setEditable(false);
             this.nameField.setEnabled(false);
 
-//novo pedido
+            //Arruma chat
             titleGame.setText("Game on.");
-            panelBtns.setVisible(true);
             messagesArea.setEnabled(true);
             messageField.setEditable(true);
             messageField.setEnabled(true);
             sendBtn.setEnabled(true);
-
+            this.messageField.requestFocus();
+            
+            // pedido de jogo
+            this.startGame();
+            
+        }
+        else
+            if( codeResp == 409){
+                infoField.setText("Nome inválido.");
+            } else {
+                infoField.setText("Erro desconhecido: "+codeResp);
+            }
+        
+        resp.close();
+    }
+    
+    private void startGame() {
+        Response resp = client.target(baseUri)
+            .request()
+            .accept("application/json")
+            .get();
+        
+        int codeResp = resp.getStatus();
+        
+        System.out.println(resp.toString());
+                
+        if(codeResp == 200){
+            
+            Chess chess = resp.readEntity(Chess.class);
 
             chessBoard.removeAll();
             for (int i = 0; i < 8; i++) {
@@ -698,46 +752,17 @@ public class ClientFrame extends JFrame {
 
             player1SpareBoard.setBackground(new Color(108,108,195));
             player2SpareBoard.setBackground(new Color(206,206,255));
-
-            setBoard();
-
-            this.messageField.requestFocus();
             
+            for (Piece piece : chess.getChessPieces()) {
+                byte[] posit = piece.getPosition();
+                byte[] piecetype = piece.getPiece();
+                board[posit[0]][posit[1]].setPiece(piecetype[0], piecetype[1]);
+            };
         }
         else
-            if( codeResp == 409){
-                infoField.setText("Nome inválido.");
-            } else {
-                infoField.setText("Erro desconhecido: "+codeResp);
-            }
+            infoField.setText("Erro ao receber jogo.");
         
-        resp.close();
-        
-
-//        receiverThread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                byte buf[] = new byte[100];
-//                DatagramPacket dp = new DatagramPacket(buf, buf.length);
-//                while (true) {
-//
-//                    // receber mensagem
-//
-//                    String str = new String(dp.getData(), 0, dp.getLength());
-//                    Format formatter = new SimpleDateFormat("HH:mm:ss");
-//                    String time = formatter.format(new Date());
-//                    String ip = dp.getAddress().getHostAddress();
-//
-//                    messagesArea.append(time + " (" + ip + ") " + str + "\n");
-//                    JScrollBar sb = jScrollArea.getVerticalScrollBar();
-//                    sb.setValue(sb.getMaximum());
-//                }
-//            }
-//        });
-//        receiverThread.start();
     }
-    
-    
 
     public void selected(int x, int y) {
         System.out.printf("mouse pressed at: %d - %d\n", x, y);
@@ -796,6 +821,9 @@ public class ClientFrame extends JFrame {
             java.util.logging.Logger.getLogger(ClientFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         EventQueue.invokeLater(new Runnable() {
@@ -804,5 +832,6 @@ public class ClientFrame extends JFrame {
             }
         });
     }              
+
 
 }
