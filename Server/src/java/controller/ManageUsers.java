@@ -72,21 +72,34 @@ public class ManageUsers {
         return false;
     }
     
-    public synchronized boolean changeStatus(String username, boolean isPlayer){
+    public synchronized User changeStatus(String username, boolean isPlayer){
         if(isPlayer){
             if(this.getNumberOfPlayers() == 2){
-                return false;
+                return null;
             }
         }
-        
+        int indexOfUser = -1;
+        byte takenPosition = -1;
         for(int i = 0; i < this.clients.size(); i++){
             if(this.clients.get(i).getUsername().equals(username)){
                 this.clients.get(i).setPlayer(isPlayer);
-                return true;
+                indexOfUser = i;
+            }
+            if(this.clients.get(i).getPosition() != 0){
+                takenPosition = this.clients.get(i).getPosition();
             }
         }
-        
-        return false;
+        if(indexOfUser != -1){
+            if(!isPlayer){
+                this.clients.get(indexOfUser).setPosition((byte)0);
+            }else if(takenPosition == 1){
+                this.clients.get(indexOfUser).setPosition((byte)2);
+            }else{
+                this.clients.get(indexOfUser).setPosition((byte)1);
+            }
+            return this.clients.get(indexOfUser);
+        }
+        return null;
     }
     
 }

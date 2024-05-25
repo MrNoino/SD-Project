@@ -13,7 +13,6 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
-import java.util.Arrays;
 import model.Chess;
 import model.User;
 import model.Piece;
@@ -40,8 +39,7 @@ public class ChessResource{
     @Path("pieces")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addPiece(int[] piece){
-        System.out.println(Arrays.toString(piece));
+    public Response addPiece(Piece piece){
         return Response.ok().build();
     }
     
@@ -58,8 +56,6 @@ public class ChessResource{
     public Response removePiece(Piece piece){
         return Response.ok().build();
     }
-    
-    
     
     // *** CLIENTS ***
     @Path("users")
@@ -98,9 +94,10 @@ public class ChessResource{
     @Path("users")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response changeStatus(User user){
-        if(manageUsers.changeStatus(user.getUsername(), user.isPlayer())){
-            return Response.noContent().build();
+    public User changeStatus(User user){
+        User u = manageUsers.changeStatus(user.getUsername(), user.isPlayer());
+        if(u != null){
+            return u;
         }else{
             throw new WebApplicationException(Response.Status.CONFLICT);
         }
