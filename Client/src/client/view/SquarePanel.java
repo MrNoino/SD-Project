@@ -1,5 +1,6 @@
 package client.view;
 
+import client.model.Piece;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.URL;
@@ -7,7 +8,7 @@ import javax.swing.*;
 
 public class SquarePanel extends JPanel {
 
-    private int row, column;
+    private Piece piece;
     private ClientFrame cg;
     private JLabel imageLabel;
 
@@ -19,13 +20,12 @@ public class SquarePanel extends JPanel {
     //colors: 0 - white; 1 - black;
     //pieces: 0 - pawn(peao); 1 - knight(cavalo); 2 - bishop(bispo)
     //        3 - rook(torre); 4 - queen(rainha); 5 - king(rei)
-    public SquarePanel(int x, int y, ClientFrame c) {
-        row = x;
-        column = y;
+    public SquarePanel(byte x, byte y, ClientFrame c, boolean player) {
+        piece = new Piece((byte) 7, (byte) 7, (byte) x, (byte) y);
         cg = c;
         imageLabel = new JLabel();
         add(imageLabel);
-        addMouseListener(new SquareMouseListener());
+        if(player) addMouseListener(new SquareMouseListener());
     }
 
     public static void loadPieceImages() {
@@ -54,14 +54,24 @@ public class SquarePanel extends JPanel {
             setBackground(new Color(206,206,206));
         }
     }
+    
+    public Piece getPiece(){
+        return piece;
+    }
 
     public void setPiece(int color, int type) {
-//        System.out.println(pieceImage[color][type].get(this));
-        imageLabel.setIcon(new ImageIcon(pieceImage[color][type]));
+        if(color == 7 || type == 7){
+            removePiece();
+        } else{
+//            System.out.println(pieceImage[color][type].get(this));
+            imageLabel.setIcon(new ImageIcon(pieceImage[color][type]));
+            piece.setPiece(new byte[]{(byte) color, (byte) type});
+        }
     }
 
     public void removePiece() {
         imageLabel.setIcon(null);
+        piece.setPiece(new byte[]{(byte) 7, (byte) 7});
     }
 
     class SquareMouseListener extends MouseAdapter {
@@ -77,8 +87,9 @@ public class SquarePanel extends JPanel {
         }
 
         public void mousePressed(MouseEvent e) {
-            cg.selected(row, column);
+            cg.selected(SquarePanel.this);
             setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+//            setBackground(Color.ORANGE);
         }
 
     }
