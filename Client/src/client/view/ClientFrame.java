@@ -2,10 +2,7 @@ package client.view;
 
 import client.model.Chess;
 import client.model.Piece;
-import java.io.IOException;
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import client.model.User;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -14,9 +11,10 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.client.ResponseProcessingException;
 import java.util.List;
 
-import client.model.User;
 
 /**
  *
@@ -24,8 +22,7 @@ import client.model.User;
  */
 public class ClientFrame extends JFrame {
     
-    // <editor-fold defaultstate="collapsed" desc="Variaveis...">
-    // Variables declaration - do not modify
+    // <editor-fold defaultstate="collapsed" desc="Variables declaration">
     private JPanel mainPainel; 
     
     private JPanel flexPanel;
@@ -81,13 +78,17 @@ public class ClientFrame extends JFrame {
     
     private User myUser;
     
+    private Thread upChess;
+    
+    private SquarePanel firstClick;
+    private SquarePanel secondClick;
+    
     // End of variables declaration
     //</editor-fold>
 
-    public ClientFrame() {
+    public ClientFrame() { // <editor-fold defaultstate="collapsed" desc="OK"> 
         
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
         setMinimumSize(new Dimension(1400,840));
         setResizable(true);
@@ -107,19 +108,15 @@ public class ClientFrame extends JFrame {
         chessBoard.setLayout(new GridLayout(8,8));
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                SquarePanel sqPanel = new SquarePanel(i, j, this);
+                SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, false);
                 sqPanel.setBackgroundGray((i + j) % 2);
                 board[i][j] = sqPanel;
                 chessBoard.add(sqPanel);
-
             }
         }
-        
-    }
+    }// </editor-fold>
 
-
-    // <editor-fold defaultstate="collapsed" desc="initComponents()">
-    private void initComponents() {
+    private void initComponents() { // <editor-fold defaultstate="collapsed" desc="OK">
 
         mainPainel = new JPanel();
         
@@ -590,18 +587,22 @@ public class ClientFrame extends JFrame {
         pack();
     }// </editor-fold>                        
 
-    // <editor-fold defaultstate="collapsed" desc="exitMenuItemActionPerformed(ActionEvent evt)">
-    private void exitMenuItemActionPerformed(ActionEvent evt) {
+    private void exitMenuItemActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK">
+        
+        if(upChess != null && upChess.isAlive()){
+            upChess.interrupt();
+            System.out.println("Thread upChess interrompida.");
+        }
         
         if(myUser != null){
             leaveBtnActionPerformed(null);
+            System.out.println("Log out realizado.");
         }
         
         System.exit(0);
     }// </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="sendBtnActionPerformed(ActionEvent evt)">
-    private void sendBtnActionPerformed(ActionEvent evt) {                                        
+    
+    private void sendBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK">
 
         this.sendBtn.setEnabled(false);
         this.infoField.setText("");
@@ -626,19 +627,60 @@ public class ClientFrame extends JFrame {
         this.sendBtn.setEnabled(true);
         this.messageField.requestFocus();
     }// </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="messageFieldKeyTyped(KeyEvent evt)">
-    private void messageFieldKeyTyped(KeyEvent evt) {                                      
+    
+    private void messageFieldKeyTyped(KeyEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
         // TODO add your handling code here:
         if (evt.getKeyChar() == '\n') {
             sendBtnActionPerformed(null);
         }
     }// </editor-fold>
 
-    private void observerButtonActionPerformed(ActionEvent evt) {                                               
-        // TODO add your handling code here:
-    }
-
+    private void observerButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+        
+        User sendUser = new User();
+        sendUser.setUsername(myUser.getUsername());
+        sendUser.setPlayer(!myUser.isPlayer());
+        
+        Response resp = client.target(baseUri+"users/")
+            .request()
+            .put(Entity.json(sendUser));
+        
+        int codeResp = resp.getStatus();
+        
+        System.out.println(resp.toString());
+                
+        if(codeResp == 204){
+            myUser.setPlayer(sendUser.isPlayer());
+            
+            if(sendUser.isPlayer()){
+                if(namePlayer1.getText().equals("Player 1")){
+                    namePlayer1.setText(myUser.getUsername());
+                } else{
+                    if(namePlayer2.getText().equals("Player 2")){
+                        namePlayer2.setText(myUser.getUsername());
+                    } else{
+                        infoField.setText("erro ao alterar nome para jodador");
+                    }
+                }
+            } else{
+              if(myUser.getPosition() == 1){
+                  namePlayer1.setText("Player 1");
+              } else{
+                  if(myUser.getPosition() == 2){
+                    namePlayer2.setText("Player 2");
+                  } else{
+                        infoField.setText("erro ao alterar nome para padrão");
+                  }
+              }
+            }
+            
+            decideBtns();
+        }
+        else{
+            infoField.setText("Erro ao tornar observador|jogador");
+        }
+    }// </editor-fold>
+    
     private void rearrangeButtonActionPerformed(ActionEvent evt) {                                                
         // TODO add your handling code here:
     }
@@ -651,16 +693,17 @@ public class ClientFrame extends JFrame {
         // TODO add your handling code here:
     }
 
-    // <editor-fold defaultstate="collapsed" desc="leaveBtnActionPerformed(ActionEvent evt)">
-    private void leaveBtnActionPerformed(ActionEvent evt) {                                         
+    private void leaveBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
 
-        // terminar conexão
+        infoField.setText("");
+        
         Response resp = client.target(baseUri+"users/")
                               .path(myUser.getUsername())
                               .request()
                               .delete();
         int codeResp = resp.getStatus();
         resp.close();
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         
         System.out.println(resp.toString());
         
@@ -668,7 +711,7 @@ public class ClientFrame extends JFrame {
             chessBoard.removeAll();
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
-                    SquarePanel sqPanel = new SquarePanel(i, j, this);
+                    SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, false);
                     sqPanel.setBackgroundGray((i + j) % 2);
                     board[i][j] = sqPanel;
                     chessBoard.add(sqPanel);
@@ -704,100 +747,154 @@ public class ClientFrame extends JFrame {
         } else{
             infoField.setText("Erro desconhecido");
         }
+        myUser = null;
         client.close();
     }// </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="joinBtnActionPerformed(ActionEvent evt)">
-    private void joinBtnActionPerformed(ActionEvent evt) { 
+    private void joinBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+        infoField.setText("");
         
-        client = ClientBuilder.newClient();
-        baseUri = "http://"+ ipField.getText() + ":" + portField.getText() + "/chess/api/";
+        if(ipField.getText().isEmpty() || portField.getText().isEmpty() || nameField.getText().isEmpty()){
+            infoField.setText("Todos os campos devem ser preenchidos.");
+        } else{            
+            client = ClientBuilder.newClient();
+            baseUri = "http://"+ ipField.getText() + ":" + portField.getText() + "/chess/api/";
 
-        User newCliente = new User();
-        newCliente.setUsername(nameField.getText());
-        // inicia conexão
-        Response resp = client.target(baseUri+"users/")
-            .request()
-            .accept("application/json")
-            .post(Entity.json(newCliente));
+            User newCliente = new User();
+            newCliente.setUsername(nameField.getText());
+            // inicia conexão
+            Response resp = null;
+            try {
+                resp = client.target(baseUri+"users/")
+                .request()
+                .accept("application/json")
+                .post(Entity.json(newCliente));
+            } catch (ResponseProcessingException ex){
+                System.out.println(ex);
+                infoField.setText("Erro desconhecido");
+            } catch (IllegalArgumentException | ProcessingException ex){
+                System.out.println(ex);
+                infoField.setText("Erro ao encontrar servidor, rever endereço de servidor.");
+            }
+
+            if(resp != null){
+                setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         
-        int codeResp = resp.getStatus();
-        
-        System.out.println(resp.toString());
-                
-        if(codeResp == 200){
-            
-            List<User> users = resp.readEntity(new GenericType<List<User>>(){});
-            String observersName = "";
-            
-            for (User user : users) {
-                if(user.isPlayer()){
-                    if(user.getPosition() == 1){
-                        namePlayer1.setText(user.getUsername());
-                    } else{
-                        namePlayer2.setText(user.getUsername());
+                int codeResp = resp.getStatus();
+
+                System.out.println(resp.toString());
+
+                if(codeResp == 200){
+
+                    List<User> users = resp.readEntity(new GenericType<List<User>>(){});
+                    String observersName = "";
+
+                    for (User user : users) {
+                        if(user.isPlayer()){
+                            if(user.getPosition() == 1){
+                                namePlayer1.setText(user.getUsername());
+                            } else{
+                                namePlayer2.setText(user.getUsername());
+                            }
+                        } else{
+                            observersName += "|  "+user.getUsername()+"  |";
+                        }
+                        if(user.getUsername().equals(newCliente.getUsername())){
+                            myUser = user;
+                        }   
                     }
-                } else{
-                    observersName += "|  "+user.getUsername()+"  |";
+
+                    observeField.setText(observersName);
+
+                    decideBtns();
+                    panelBtns.setVisible(true);
+
+                    //bloqueia form de conexão
+                    this.joinBtn.setEnabled(false);
+                    this.leaveBtn.setEnabled(true);
+
+                    this.ipField.setEditable(false);
+                    this.ipField.setEnabled(false);
+                    this.portField.setEditable(false);
+                    this.portField.setEnabled(false);
+                    this.nameField.setEditable(false);
+                    this.nameField.setEnabled(false);
+
+                    //Arruma chat
+                    titleGame.setText("Game on.");
+                    messagesArea.setEnabled(true);
+                    messageField.setEditable(true);
+                    messageField.setEnabled(true);
+                    sendBtn.setEnabled(true);
+                    this.messageField.requestFocus();
+
+                    // pedido de jogo
+                    this.startGame();
+                    // thread de atualização do jogo
+                    upChess = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            threadGameAsync();
+                        }
+                    });
+                    upChess.start();
+
                 }
-                if(user.getUsername().equals(newCliente.getUsername())){
-                    myUser = user;
-                }   
-            }
-            
-            observeField.setText(observersName);
-            
-            if(!myUser.isPlayer()){
-                observerButton.setText("Turn player");
-                cleanButton.setVisible(false);
-                flipButton.setVisible(false);
-                rearrangeButton.setVisible(false);
-                positionButton.setVisible(false);
-            }
-            else{
-                observerButton.setText("Turn observer");
-                cleanButton.setVisible(true);
-                flipButton.setVisible(true);
-                rearrangeButton.setVisible(true);
-                positionButton.setVisible(true);
-            }
-            panelBtns.setVisible(true);
-            
-            //bloqueia form de conexão
-            this.joinBtn.setEnabled(false);
-            this.leaveBtn.setEnabled(true);
+                else
+                    if( codeResp == 409){
+                        infoField.setText("Nome inválido.");
+                    } else {
+                        infoField.setText("Erro desconhecido: "+codeResp);
+                    }
 
-            this.ipField.setEditable(false);
-            this.ipField.setEnabled(false);
-            this.portField.setEditable(false);
-            this.portField.setEnabled(false);
-            this.nameField.setEditable(false);
-            this.nameField.setEnabled(false);
-
-            //Arruma chat
-            titleGame.setText("Game on.");
-            messagesArea.setEnabled(true);
-            messageField.setEditable(true);
-            messageField.setEnabled(true);
-            sendBtn.setEnabled(true);
-            this.messageField.requestFocus();
-            
-            // pedido de jogo
-            this.startGame();
-            
+                resp.close();
+            }
         }
-        else
-            if( codeResp == 409){
-                infoField.setText("Nome inválido.");
-            } else {
-                infoField.setText("Erro desconhecido: "+codeResp);
-            }
-        
-        resp.close();
     }// </editor-fold>
     
-    // <editor-fold defaultstate="collapsed" desc="startGame()">
-    private void startGame() {
+    private void threadGameAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
+        while (true) { 
+            Response resp = client.target(baseUri)
+                    .path("async")
+                    .request()
+                    .accept("application/json")
+                    .get();
+
+            int codeResp = resp.getStatus();
+
+            System.out.println(resp.toString());
+
+            if(codeResp == 200){
+
+                Chess chess = resp.readEntity(Chess.class);
+
+                chessBoard.removeAll();
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, myUser.isPlayer());
+                        sqPanel.setBackgroundColor((i + j) % 2);
+                        board[i][j] = sqPanel;
+                        chessBoard.add(sqPanel);
+
+                    }
+                }
+
+                player1SpareBoard.setBackground(new Color(108,108,195));
+                player2SpareBoard.setBackground(new Color(206,206,255));
+
+                for (Piece piece : chess.getChessPieces()) {
+                    byte[] posit = piece.getPosition();
+                    byte[] piecetype = piece.getPiece();
+                    board[posit[0]][posit[1]].setPiece(piecetype[0], piecetype[1]);
+                }
+            }
+            else {
+                infoField.setText("Erro ao receber jogo.");
+            }
+        }
+    }// </editor-fold>
+    
+    private void startGame() { // <editor-fold defaultstate="collapsed" desc="OK"> 
         Response resp = client.target(baseUri)
             .request()
             .accept("application/json")
@@ -814,7 +911,7 @@ public class ClientFrame extends JFrame {
             chessBoard.removeAll();
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
-                    SquarePanel sqPanel = new SquarePanel(i, j, this);
+                    SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, myUser.isPlayer());
                     sqPanel.setBackgroundColor((i + j) % 2);
                     board[i][j] = sqPanel;
                     chessBoard.add(sqPanel);
@@ -829,19 +926,47 @@ public class ClientFrame extends JFrame {
                 byte[] posit = piece.getPosition();
                 byte[] piecetype = piece.getPiece();
                 board[posit[0]][posit[1]].setPiece(piecetype[0], piecetype[1]);
-            };
+            }
         }
         else
             infoField.setText("Erro ao receber jogo.");
         
     }// </editor-fold>
 
-    public void selected(int x, int y) {
-        System.out.printf("mouse pressed at: %d - %d\n", x, y);
-    }
+    private void decideBtns(){ // <editor-fold defaultstate="collapsed" desc="OK"> 
+        if(myUser.isPlayer()){
+            observerButton.setText("Turn observer");
+            cleanButton.setVisible(true);
+            flipButton.setVisible(true);
+            rearrangeButton.setVisible(true);
+            positionButton.setVisible(true);
+        }
+        else{
+            observerButton.setText("Turn player");
+            cleanButton.setVisible(false);
+            flipButton.setVisible(false);
+            rearrangeButton.setVisible(false);
+            positionButton.setVisible(false);
+        }
+    }// </editor-fold>
     
-    // <editor-fold defaultstate="collapsed" desc="setBoard()">
-    public void setBoard(){
+    public void selected(SquarePanel sp) { // <editor-fold defaultstate="collapsed" desc="not used">
+        Piece piece = sp.getPiece();
+        
+        System.out.printf("mouse pressed at: %d-%d - %d-%d\n", piece.getPiece()[0], piece.getPiece()[1], piece.getPosition()[0], piece.getPosition()[1]);
+        if(firstClick == null){
+            firstClick = sp;
+        } else{
+            Piece first = new Piece(firstClick.getPiece().getPiece()[0], firstClick.getPiece().getPiece()[1],firstClick.getPiece().getPosition()[0],firstClick.getPiece().getPosition()[1]);
+//            System.out.println(firstClick.getPiece().getPosition()[0] + " -> "+piece.getPiece()[1]);
+            board[first.getPosition()[0]][first.getPosition()[1]].setPiece(piece.getPiece()[0], piece.getPiece()[1]);
+//            System.out.println(piece.getPosition()[0] + " -> "+firstClick.getPiece().getPiece()[1]);
+            board[piece.getPosition()[0]][piece.getPosition()[1]].setPiece(first.getPiece()[0], first.getPiece()[1]);
+            firstClick = null;
+        }
+    }// </editor-fold>
+    
+    public void setBoard(){ // <editor-fold defaultstate="collapsed" desc="not used">
         for(int i = 0; i < 8; i++){
             board[6][i].setPiece(0, 0);
         }
@@ -868,11 +993,7 @@ public class ClientFrame extends JFrame {
         board[0][7].setPiece(1, 3);
     }// </editor-fold>
     
-    // <editor-fold defaultstate="collapsed" desc="public static void main(String args[])">
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
+    public static void main(String args[]) { // <editor-fold defaultstate="collapsed" desc="OK">
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -903,6 +1024,4 @@ public class ClientFrame extends JFrame {
             }
         });
     }//</editor-fold>       
-
-
 }
