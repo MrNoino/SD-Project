@@ -8,8 +8,8 @@ public class ManageUsers {
     
     public ManageUsers(){
         this.clients = new ArrayList<User>();
-        this.addUser(new User("Mr.Noino", true, (byte) 1));
-        this.addUser(new User("Karine", true, (byte) 2));
+//        this.addUser(new User("Mr.Noino", true, (byte) 1));
+//        this.addUser(new User("Karine", true, (byte) 2));
         this.addUser(new User("Windoh", false, (byte) 0));
     }
     

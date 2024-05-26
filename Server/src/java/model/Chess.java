@@ -38,15 +38,52 @@ public class Chess {
         return this.chessPieces;
     }
     
-    public Piece getChessPiece(byte[] piece) {
+    private Piece getChessPiece(Piece piece) {
         synchronized (this.chessPieces) {
             for(Piece p: this.chessPieces){
-                if(p.getPiece() == piece){
+                if(p.getPosition()[0] == piece.getPosition()[0] && p.getPosition()[1] == piece.getPosition()[1] &&
+                        p.getType()[0] == piece.getType()[0] && p.getType()[1] == piece.getType()[1]){
                     return p;
                 }
             }
         }
         return null;
+    }
+    
+    private Piece getChessPiecebyPosition(byte[] position) {
+        synchronized (this.chessPieces) {
+            for(Piece p: this.chessPieces){
+                if(p.getPosition()[0] == position[0] && p.getPosition()[1] == position[1]){
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public int moveChessPiece(Piece past, Piece future) {
+        synchronized (this.chessPieces) {
+            Piece p = getChessPiece(past);
+            if(p != null){
+                Piece f = getChessPiecebyPosition(future.getPosition());
+                if(f != null && future.getPosition()[0] != -1){
+                    if(p.getType()[0] != f.getType()[0]){
+                         p.setPosition(future.getPosition());
+                         f.setPosition(new byte[]{-1,-1});
+                         return -1; //OK
+                    } else{
+                        System.out.println("Error: peças de mesmo jogador");
+                        return 400; //BadRequest
+                    }
+                }else{
+                    p.setPosition(future.getPosition());
+                    return -1;
+                }
+            } else{
+                System.out.println("Error: primeira peça não encontrada");
+                return 400; //BadRequest
+            }
+        }
     }
     
     public boolean setChessPiece(Piece piece) {

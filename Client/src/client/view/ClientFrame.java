@@ -336,30 +336,16 @@ public class ClientFrame extends JFrame {
         player2SpareBoard.setBorder(BorderFactory.createEtchedBorder());
         player2SpareBoard.setPreferredSize(new Dimension(120, 400));
 
-        GroupLayout player2SpareBoardLayout = new GroupLayout(player2SpareBoard);
+        GridLayout player2SpareBoardLayout = new GridLayout(8,2);
         player2SpareBoard.setLayout(player2SpareBoardLayout);
-        player2SpareBoardLayout.setHorizontalGroup(
-            player2SpareBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 116, Short.MAX_VALUE)
-        );
-        player2SpareBoardLayout.setVerticalGroup(
-            player2SpareBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 422, Short.MAX_VALUE)
-        );
+        
 
         player1SpareBoard.setBorder(BorderFactory.createEtchedBorder());
         player1SpareBoard.setPreferredSize(new Dimension(120, 400));
 
-        GroupLayout player1SpareBoardLayout = new GroupLayout(player1SpareBoard);
+        GridLayout player1SpareBoardLayout = new GridLayout(8,2);
         player1SpareBoard.setLayout(player1SpareBoardLayout);
-        player1SpareBoardLayout.setHorizontalGroup(
-            player1SpareBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 116, Short.MAX_VALUE)
-        );
-        player1SpareBoardLayout.setVerticalGroup(
-            player1SpareBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
+        
 
         namePlayer2.setFont(new Font("Gill Sans MT", 0, 14)); // NOI18N
         namePlayer2.setText("Player 2");
@@ -702,13 +688,15 @@ public class ClientFrame extends JFrame {
                               .request()
                               .delete();
         int codeResp = resp.getStatus();
-        resp.close();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         
         System.out.println(resp.toString());
+        resp.close();
         
         if(codeResp == 204){
             chessBoard.removeAll();
+            player1SpareBoard.removeAll();
+            player2SpareBoard.removeAll();
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
                     SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, false);
@@ -828,6 +816,8 @@ public class ClientFrame extends JFrame {
                     sendBtn.setEnabled(true);
                     this.messageField.requestFocus();
 
+                    player1SpareBoard.setBackground(new Color(108,108,195));
+                    player2SpareBoard.setBackground(new Color(206,206,255));
                     // pedido de jogo
                     this.startGame();
                     // thread de atualização do jogo
@@ -865,32 +855,13 @@ public class ClientFrame extends JFrame {
             System.out.println(resp.toString());
 
             if(codeResp == 200){
-
-                Chess chess = resp.readEntity(Chess.class);
-
-                chessBoard.removeAll();
-                for (int i = 0; i < 8; i++) {
-                    for (int j = 0; j < 8; j++) {
-                        SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, myUser.isPlayer());
-                        sqPanel.setBackgroundColor((i + j) % 2);
-                        board[i][j] = sqPanel;
-                        chessBoard.add(sqPanel);
-
-                    }
-                }
-
-                player1SpareBoard.setBackground(new Color(108,108,195));
-                player2SpareBoard.setBackground(new Color(206,206,255));
-
-                for (Piece piece : chess.getChessPieces()) {
-                    byte[] posit = piece.getPosition();
-                    byte[] piecetype = piece.getPiece();
-                    board[posit[0]][posit[1]].setPiece(piecetype[0], piecetype[1]);
-                }
+                List<Piece> chess = resp.readEntity(new GenericType<List<Piece>>(){});
+                setBoard(chess);
             }
             else {
                 infoField.setText("Erro ao receber jogo.");
             }
+            resp.close();
         }
     }// </editor-fold>
     
@@ -905,32 +876,12 @@ public class ClientFrame extends JFrame {
         System.out.println(resp.toString());
                 
         if(codeResp == 200){
-            
-            Chess chess = resp.readEntity(Chess.class);
-
-            chessBoard.removeAll();
-            for (int i = 0; i < 8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, myUser.isPlayer());
-                    sqPanel.setBackgroundColor((i + j) % 2);
-                    board[i][j] = sqPanel;
-                    chessBoard.add(sqPanel);
-
-                }
-            }
-
-            player1SpareBoard.setBackground(new Color(108,108,195));
-            player2SpareBoard.setBackground(new Color(206,206,255));
-            
-            for (Piece piece : chess.getChessPieces()) {
-                byte[] posit = piece.getPosition();
-                byte[] piecetype = piece.getPiece();
-                board[posit[0]][posit[1]].setPiece(piecetype[0], piecetype[1]);
-            }
+            List<Piece> chess = resp.readEntity(new GenericType<List<Piece>>(){});
+            setBoard(chess);
         }
         else
             infoField.setText("Erro ao receber jogo.");
-        
+        resp.close();
     }// </editor-fold>
 
     private void decideBtns(){ // <editor-fold defaultstate="collapsed" desc="OK"> 
@@ -950,47 +901,86 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
     
-    public void selected(SquarePanel sp) { // <editor-fold defaultstate="collapsed" desc="not used">
+    public void selected(SquarePanel sp) { // <editor-fold defaultstate="collapsed" desc="OK">
         Piece piece = sp.getPiece();
-        
-        System.out.printf("mouse pressed at: %d-%d - %d-%d\n", piece.getPiece()[0], piece.getPiece()[1], piece.getPosition()[0], piece.getPosition()[1]);
-        if(firstClick == null){
+        System.out.printf("mouse pressed at: %d-%d - %d-%d\n", piece.getType()[0], piece.getType()[1], piece.getPosition()[0], piece.getPosition()[1]);
+       
+        if(piece.getType().length > 0 && piece.getType()[0] == myUser.getPosition()-1){
             firstClick = sp;
-        } else{
-            Piece first = new Piece(firstClick.getPiece().getPiece()[0], firstClick.getPiece().getPiece()[1],firstClick.getPiece().getPosition()[0],firstClick.getPiece().getPosition()[1]);
-//            System.out.println(firstClick.getPiece().getPosition()[0] + " -> "+piece.getPiece()[1]);
-            board[first.getPosition()[0]][first.getPosition()[1]].setPiece(piece.getPiece()[0], piece.getPiece()[1]);
-//            System.out.println(piece.getPosition()[0] + " -> "+firstClick.getPiece().getPiece()[1]);
-            board[piece.getPosition()[0]][piece.getPosition()[1]].setPiece(first.getPiece()[0], first.getPiece()[1]);
-            firstClick = null;
+        } else {
+            if(firstClick != null){
+                
+                Piece[] send = new Piece[]{firstClick.getPiece(), piece};
+                
+                Response resp = client.target(baseUri)
+                    .path("pieces")
+                    .request()
+                    .accept("application/json")
+                    .put(Entity.json(send));
+                
+                int codeResp = resp.getStatus();
+
+                System.out.println(resp.toString());
+
+                if(codeResp == 200){
+                    firstClick = null;
+                }
+                else {
+                    infoField.setText("Erro ao realizar jogada jogo.");
+                }
+            }
         }
     }// </editor-fold>
     
-    public void setBoard(){ // <editor-fold defaultstate="collapsed" desc="not used">
-        for(int i = 0; i < 8; i++){
-            board[6][i].setPiece(0, 0);
-        }
-        board[7][0].setPiece(0, 3);
-        board[7][1].setPiece(0, 1);
-        board[7][2].setPiece(0, 2);
-        board[7][3].setPiece(0, 4);
-        board[7][4].setPiece(0, 5);
-        board[7][5].setPiece(0, 2);
-        board[7][6].setPiece(0, 1);
-        board[7][7].setPiece(0, 3);
+    public void setBoard(List<Piece> chess){ // <editor-fold defaultstate="collapsed" desc="OK">
+        chessBoard.removeAll();
+        player1SpareBoard.removeAll();
+        player2SpareBoard.removeAll();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, myUser.isPlayer());
+                sqPanel.setBackgroundColor((i + j) % 2 != 0);
+                board[i][j] = sqPanel;
+                chessBoard.add(sqPanel);
 
-        
-        for(int i = 0; i < 8; i++){
-            board[1][i].setPiece(1, 0);
+            }
         }
-        board[0][0].setPiece(1, 3);
-        board[0][1].setPiece(1, 1);
-        board[0][2].setPiece(1, 2);
-        board[0][3].setPiece(1, 4);
-        board[0][4].setPiece(1, 5);
-        board[0][5].setPiece(1, 2);
-        board[0][6].setPiece(1, 1);
-        board[0][7].setPiece(1, 3);
+
+        for (Piece piece : chess) {
+            byte[] position = piece.getPosition();
+            byte[] piecetype = piece.getType();
+            if(position[0] >= 0 && position[0] < 8 && position[1] >= 0 && position[1] < 8 ){
+                board[position[0]][position[1]].setPiece(piecetype[0], piecetype[1]);
+            } else{
+                SquarePanel sq = new SquarePanel((byte) -1, (byte) -1,this,myUser.isPlayer());
+                sq.setBackground(null);
+                sq.setPiece(piecetype[0],piecetype[1]);
+                if(piecetype[0] == 0){
+                    player1SpareBoard.add(sq);
+                } else{
+                    player2SpareBoard.add(sq);
+                }
+            }
+        }
+        
+        if(myUser.isPlayer()){
+            SquarePanel sq = new SquarePanel((byte) -1, (byte) -1, this, myUser.isPlayer());
+            sq.setBackgroundColor(myUser.getPosition() == 1);
+                    
+            if(myUser.getPosition() == 1){
+                if(player1SpareBoard.getComponentCount() == 0){
+                    player1SpareBoard.add(sq);
+                }
+            } else{
+                if(player2SpareBoard.getComponentCount() == 0){
+                    player2SpareBoard.add(sq);
+                }
+            }
+        }
+
+        chessBoard.repaint();
+        player1SpareBoard.repaint();
+        player2SpareBoard.repaint();
     }// </editor-fold>
     
     public static void main(String args[]) { // <editor-fold defaultstate="collapsed" desc="OK">

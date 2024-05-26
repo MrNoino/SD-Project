@@ -11,9 +11,23 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "piece": [0, 1],
+    "type": [0, 1],
     "position": [1, 1]
 }
+
+### Move piece
+PUT {{apiurl}}/pieces/ HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+
+[ {
+    "type": [1, 0],
+    "position": [-1, -1]
+  },
+  {
+    "position": [4, 5]
+  }
+]
 
 ### Join a client
 POST {{apiurl}}/users/ HTTP/1.1

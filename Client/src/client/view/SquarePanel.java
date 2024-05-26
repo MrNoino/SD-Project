@@ -21,7 +21,7 @@ public class SquarePanel extends JPanel {
     //pieces: 0 - pawn(peao); 1 - knight(cavalo); 2 - bishop(bispo)
     //        3 - rook(torre); 4 - queen(rainha); 5 - king(rei)
     public SquarePanel(byte x, byte y, ClientFrame c, boolean player) {
-        piece = new Piece((byte) 7, (byte) 7, (byte) x, (byte) y);
+        piece = new Piece((byte) -1, (byte) -1, (byte) x, (byte) y);
         cg = c;
         imageLabel = new JLabel();
         add(imageLabel);
@@ -39,8 +39,8 @@ public class SquarePanel extends JPanel {
         }
     }
 
-    public void setBackgroundColor(int color) {
-        if (color != 0) {
+    public void setBackgroundColor(boolean color) {
+        if (color) {
             setBackground(new Color(108,108,195));
         } else {
             setBackground(new Color(206,206,255));
@@ -60,18 +60,18 @@ public class SquarePanel extends JPanel {
     }
 
     public void setPiece(int color, int type) {
-        if(color == 7 || type == 7){
+        if(color == -1 || type == -1){
             removePiece();
         } else{
 //            System.out.println(pieceImage[color][type].get(this));
             imageLabel.setIcon(new ImageIcon(pieceImage[color][type]));
-            piece.setPiece(new byte[]{(byte) color, (byte) type});
+            piece.setType(new byte[]{(byte) color, (byte) type});
         }
     }
 
     public void removePiece() {
         imageLabel.setIcon(null);
-        piece.setPiece(new byte[]{(byte) 7, (byte) 7});
+        piece.setType(new byte[]{(byte) -1, (byte) -1});
     }
 
     class SquareMouseListener extends MouseAdapter {

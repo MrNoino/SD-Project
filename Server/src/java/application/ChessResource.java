@@ -10,6 +10,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.container.AsyncResponse;
+import jakarta.ws.rs.container.Suspended;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -22,6 +24,8 @@ public class ChessResource{
     private Chess chess;
     private ManageUsers manageUsers;
     
+    private ArrayList<AsyncResponse> listeners = new ArrayList<>();
+    
     public ChessResource(){
         this.chess = new Chess();
         this.manageUsers = new ManageUsers();
@@ -31,8 +35,28 @@ public class ChessResource{
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Chess getChess(){
-        return this.chess;
+    public ArrayList<Piece> getChess(){
+        return this.chess.getChessPieces();
+    }
+    
+    // *** ASYNC CHESS ***
+    
+    @GET
+    @Path("async")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getChessAsync(@Suspended AsyncResponse async){
+        synchronized (listeners) {
+            listeners.add(async);
+        }
+    }
+    
+    private void sendToListeners() {
+        synchronized (listeners) {
+            for(AsyncResponse asyncResp: listeners ){
+                asyncResp.resume(Response.ok(this.chess.getChessPieces()).build());
+            }
+            listeners.clear();
+        }
     }
     
     // *** PIECES ***
@@ -46,7 +70,11 @@ public class ChessResource{
     @Path("pieces")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response movePiece(Piece piece){
+    public Response movePiece(Piece[] piece){
+//        System.out.println(piece[0]);
+//        System.out.println(piece[1]);
+        this.chess.moveChessPiece(piece[0],piece[1]);
+        sendToListeners();
         return Response.ok().build();
     }
     
