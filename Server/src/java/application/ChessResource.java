@@ -114,6 +114,7 @@ public class ChessResource{
     }
     
     // *** CLIENTS ***
+    
     @Path("users")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -125,6 +126,7 @@ public class ChessResource{
         if(!this.manageUsers.addUser(user)){
             throw new WebApplicationException(Response.Status.CONFLICT);
         }
+        sendToUsersListeners();
         return this.manageUsers.getUsers();
     }
     
@@ -139,8 +141,8 @@ public class ChessResource{
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     public Response leave(@PathParam("username") String username){
-        System.out.println(username);
         if(this.manageUsers.removeUser(username)){
+            sendToUsersListeners();
             return Response.noContent().build();
         }else{
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -152,11 +154,11 @@ public class ChessResource{
     @Consumes(MediaType.APPLICATION_JSON)
     public User changeStatus(User user){
         User u = manageUsers.changeStatus(user.getUsername(), user.isPlayer());
-        if(u != null){
-            return u;
-        }else{
+        if(u == null){
             throw new WebApplicationException(Response.Status.CONFLICT);
         }
+        sendToUsersListeners();
+        return u;
     }
     
     // *** CHAT ***
@@ -172,6 +174,4 @@ public class ChessResource{
         sendToChatListeners(message);
         return Response.noContent().build();
     }
-    
-    
 }
