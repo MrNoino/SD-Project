@@ -1,6 +1,7 @@
 package client.view;
 
 import client.model.Chess;
+import client.model.Message;
 import client.model.Piece;
 import client.model.User;
 import javax.swing.*;
@@ -80,6 +81,7 @@ public class ClientFrame extends JFrame {
     
     private Thread upChess;
     private Thread upUsers;
+    private Thread upChat;
     
     private SquarePanel firstClick;
     private SquarePanel secondClick;
@@ -588,24 +590,42 @@ public class ClientFrame extends JFrame {
 
         this.sendBtn.setEnabled(false);
         this.infoField.setText("");
-        String msg = this.messageField.getText();
-        String name = this.nameField.getText();
-        if (name.isBlank() || name.isEmpty()) {
-            this.infoField.setText("Name field may not be empty.");
-            this.nameField.requestFocus();
+        String txt = this.messageField.getText();
+        
+        if (txt.isEmpty() || txt.isBlank()) {
+            this.infoField.setText("Message field may not be empty.");
         } else {
-            if (msg.isEmpty() || msg.isBlank()) {
-                this.infoField.setText("Message field may not be empty.");
-            } else {
-
-                msg = name + ": " + msg;
-                byte[] send = msg.getBytes();
-
-                //send message
-
+            Message msg = new Message();
+            msg.setContent(txt);
+            msg.setUser(myUser.getUsername());
+            
+            Response resp = client.target(baseUri+"chat/")
+                .request()
+                .accept("application/json")
+                .post(Entity.json(msg));
+            
+            int codeResp = resp.getStatus();
+            
+            System.out.println(resp.toString());
+            
+            if(codeResp == 204){
+                messageField.setText("");
+            } else{
+                if(codeResp == 400){
+                    infoField.setText("Mensagem vazia.");
+                }else{
+                    if(codeResp == 404){
+                        infoField.setText("Utilizador inválido.");
+                    } else{
+                        infoField.setText("Error desconnhecido: "+ codeResp);
+                    }
+                }
             }
-            this.messageField.requestFocus();
+            
+            resp.close();
         }
+        this.messageField.requestFocus();
+            
         this.sendBtn.setEnabled(true);
         this.messageField.requestFocus();
     }// </editor-fold>
@@ -634,34 +654,17 @@ public class ClientFrame extends JFrame {
         if(codeResp == 200){
             myUser = resp.readEntity(User.class);
             
-            if(myUser.isPlayer()){
-                if(myUser.getPosition() == 1){
-                    namePlayer1.setText(myUser.getUsername());
-                } else{
-                    if(myUser.getPosition() == 2){
-                        namePlayer2.setText(myUser.getUsername());
-                    } else{
-                        infoField.setText("erro ao alterar nome para jodador");
-                    }
-                }
-            } else{
-              if(namePlayer1.getText().equals(myUser.getUsername())){
-                  namePlayer1.setText("Player 1");
-              } else{
-                  if(namePlayer2.getText().equals(myUser.getUsername())){
-                    namePlayer2.setText("Player 2");
-                  } else{
-                        infoField.setText("erro ao alterar nome para padrão");
-                  }
-              }
-            }
-            
             decideBtns();
             startGame();
+        } else{
+            if(codeResp == 409){
+                infoField.setText("Vagas de Jogadores preenchidas.");
+            }
+            else{
+                infoField.setText("Erro ao tornar observador|jogador.");
+            }
         }
-        else{
-            infoField.setText("Erro ao tornar observador|jogador");
-        }
+        
         resp.close();
     }// </editor-fold>
     
@@ -675,6 +678,7 @@ public class ClientFrame extends JFrame {
 
     private void portFieldActionPerformed(ActionEvent evt) {                                          
         // TODO add your handling code here:
+        // verificar se é numero?
     }
 
     private void leaveBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
@@ -701,6 +705,11 @@ public class ClientFrame extends JFrame {
             if(upUsers != null && upUsers.isAlive()){
                 upUsers.interrupt();
                 System.out.println("Thread upUsers interrompida.");
+            }
+
+            if(upChat != null && upChat.isAlive()){
+                upChat.interrupt();
+                System.out.println("Thread upChat interrompida.");
             }
             
             chessBoard.removeAll();
@@ -821,7 +830,7 @@ public class ClientFrame extends JFrame {
                     });
                     upChess.start();
                     
-                    // thread de atualização do jogo
+                    // thread de atualização dos utilizadores
                     upUsers = new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -830,6 +839,14 @@ public class ClientFrame extends JFrame {
                     });
                     upUsers.start();
 
+                    // thread de atualização das mensagens
+                    upChat = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            threadChatAsync();
+                        }
+                    });
+                    upChat.start();
                 }
                 else
                     if( codeResp == 409){
@@ -858,6 +875,29 @@ public class ClientFrame extends JFrame {
             if(codeResp == 200){
                 List<User> users = resp.readEntity(new GenericType<List<User>>(){});
                 setUsers(users, myUser.getUsername());
+            }
+            else {
+                infoField.setText("Erro desconhecido: "+codeResp);
+            }
+            resp.close();
+        }
+    }// </editor-fold>
+    
+    private void threadChatAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
+        while (true) { 
+            Response resp = client.target(baseUri)
+                    .path("chat-async")
+                    .request()
+                    .accept("application/json")
+                    .get();
+
+            int codeResp = resp.getStatus();
+
+            System.out.println(resp.toString());
+
+            if(codeResp == 200){
+                Message msg = resp.readEntity(Message.class);
+                messagesArea.append(msg.getUser()+": "+msg.getContent()+"\n");
             }
             else {
                 infoField.setText("Erro desconhecido: "+codeResp);
@@ -1007,8 +1047,10 @@ public class ClientFrame extends JFrame {
         player2SpareBoard.repaint();
     }// </editor-fold>
     
-    public void setUsers(List<User> users, String usernameNewCliente){
+    public void setUsers(List<User> users, String usernameNewCliente){ // <editor-fold defaultstate="collapsed" desc="OK">
         String observersName = "";
+        namePlayer1.setText("Player 1");
+        namePlayer2.setText("Player 2");
 
         for (User user : users) {
             if(user.isPlayer()){
@@ -1025,7 +1067,7 @@ public class ClientFrame extends JFrame {
             }   
         }
         observeField.setText(observersName);
-    }
+    }//</editor-fold> 
     
     public static void main(String args[]) { // <editor-fold defaultstate="collapsed" desc="OK">
         /* Set the Nimbus look and feel */
