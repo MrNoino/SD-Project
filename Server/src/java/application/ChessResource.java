@@ -1,5 +1,6 @@
 package application;
 
+import controller.ManageListeners;
 import controller.ManageUsers;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -15,7 +16,7 @@ import jakarta.ws.rs.container.Suspended;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
-import model.Chess;
+import controller.Chess;
 import model.Message;
 import model.User;
 import model.Piece;
@@ -24,14 +25,12 @@ import model.Piece;
 public class ChessResource{
     private Chess chess;
     private ManageUsers manageUsers;
-    
-    private ArrayList<AsyncResponse> chessListeners = new ArrayList<>();
-    private ArrayList<AsyncResponse> usersListeners = new ArrayList<>();
-    private ArrayList<AsyncResponse> chatListeners = new ArrayList<>();
+    private ManageListeners manageListeners;
     
     public ChessResource(){
         this.chess = new Chess();
         this.manageUsers = new ManageUsers();
+        this.manageListeners = new ManageListeners();
     }
     
     // *** ASYNC CHESS ***
@@ -40,18 +39,7 @@ public class ChessResource{
     @Path("chess-async")
     @Produces(MediaType.APPLICATION_JSON)
     public void getChessAsync(@Suspended AsyncResponse async){
-        synchronized (this.chessListeners) {
-            this.chessListeners.add(async);
-        }
-    }
-    
-    private void sendToChessListeners() {
-        synchronized (this.chessListeners) {
-            for(AsyncResponse asyncResp: this.chessListeners){
-                asyncResp.resume(Response.ok(this.chess.getChessPieces()).build());
-            }
-            this.chessListeners.clear();
-        }
+        this.manageListeners.addChessListener(async);
     }
     
     // *** ASYNC USERS ***
@@ -60,18 +48,7 @@ public class ChessResource{
     @Path("users-async")
     @Produces(MediaType.APPLICATION_JSON)
     public void getUsersAsync(@Suspended AsyncResponse async){
-        synchronized (this.usersListeners) {
-            this.usersListeners.add(async);
-        }
-    }
-    
-    private void sendToUsersListeners() {
-        synchronized (this.usersListeners) {
-            for(AsyncResponse asyncResp: this.usersListeners){
-                asyncResp.resume(Response.ok(this.manageUsers.getUsers()).build());
-            }
-            this.usersListeners.clear();
-        }
+        this.manageListeners.addUserListener(async);
     }
     
     // *** ASYNC CHAT ***
@@ -80,18 +57,7 @@ public class ChessResource{
     @Path("chat-async")
     @Produces(MediaType.APPLICATION_JSON)
     public void getChatAsync(@Suspended AsyncResponse async){
-        synchronized (this.chatListeners) {
-            this.chatListeners.add(async);
-        }
-    }
-    
-    private void sendToChatListeners(Message message) {
-        synchronized (this.chatListeners) {
-            for(AsyncResponse asyncResp: this.chatListeners){
-                asyncResp.resume(Response.ok(message).build());
-            }
-            this.chatListeners.clear();
-        }
+        this.manageListeners.addChatListener(async);
     }
     
     // *** CHESS ***
@@ -109,8 +75,28 @@ public class ChessResource{
     @Consumes(MediaType.APPLICATION_JSON)
     public Response movePiece(Piece[] piece){
         this.chess.moveChessPiece(piece[0],piece[1]);
-        sendToChessListeners();
+        this.manageListeners.sendToChessListeners(this.chess);
         return Response.ok().build();
+    }
+    
+    // *** BOARD ***
+    
+    @Path("board")
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response cleanBoard(){
+        this.chess.cleanBoard();
+        this.manageListeners.sendToChessListeners(this.chess);
+        return Response.noContent().build();
+    }
+    
+    @Path("board")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response rearrangeBoard(){
+        this.chess.initializeBoard();
+        this.manageListeners.sendToChessListeners(this.chess);
+        return Response.noContent().build();
     }
     
     // *** CLIENTS ***
@@ -126,7 +112,7 @@ public class ChessResource{
         if(!this.manageUsers.addUser(user)){
             throw new WebApplicationException(Response.Status.CONFLICT);
         }
-        sendToUsersListeners();
+        this.manageListeners.sendToUsersListeners(this.manageUsers.getUsers());
         return this.manageUsers.getUsers();
     }
     
@@ -142,7 +128,7 @@ public class ChessResource{
     @Produces(MediaType.APPLICATION_JSON)
     public Response leave(@PathParam("username") String username){
         if(this.manageUsers.removeUser(username)){
-            sendToUsersListeners();
+            this.manageListeners.sendToUsersListeners(this.manageUsers.getUsers());
             return Response.noContent().build();
         }else{
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -157,7 +143,7 @@ public class ChessResource{
         if(u == null){
             throw new WebApplicationException(Response.Status.CONFLICT);
         }
-        sendToUsersListeners();
+        this.manageListeners.sendToUsersListeners(this.manageUsers.getUsers());
         return u;
     }
     
@@ -171,7 +157,7 @@ public class ChessResource{
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         if(this.manageUsers.getUser(message.getUser()) == null)
             throw new WebApplicationException(Response.Status.NOT_FOUND);
-        sendToChatListeners(message);
+        this.manageListeners.sendToChatListeners(message);
         return Response.noContent().build();
     }
 }

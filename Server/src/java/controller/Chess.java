@@ -1,12 +1,17 @@
-package model;
+package controller;
 
 import java.util.ArrayList;
+import model.Piece;
 
 public class Chess {
 
     ArrayList<Piece> chessPieces;
 
     public Chess() {
+        this.initializeBoard();
+    }
+    
+    public synchronized void initializeBoard(){
         this.chessPieces = new ArrayList<Piece>();
         //add the pawns pieces
         for (int i = 0; i < 8; i++) {
@@ -31,7 +36,6 @@ public class Chess {
         this.chessPieces.add(new Piece((byte) 1, (byte) 2, (byte) 0, (byte) 5));
         this.chessPieces.add(new Piece((byte) 1, (byte) 1, (byte) 0, (byte) 6));
         this.chessPieces.add(new Piece((byte) 1, (byte) 3, (byte) 0, (byte) 7));
-
     }
     
     public synchronized ArrayList<Piece> getChessPieces() {
@@ -86,8 +90,14 @@ public class Chess {
         }
     }
     
-    public boolean setChessPiece(Piece piece) {
-        return true;
+    public void cleanBoard(){
+        synchronized(this.chessPieces){
+            for(int i = 0; i < this.chessPieces.size(); i++){
+                Piece piece = this.chessPieces.get(i);
+                piece.setPosition(new byte[]{(byte) -1, (byte)-1});
+                this.chessPieces.set(i, piece);
+            }
+        }
     }
 
 }

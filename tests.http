@@ -5,16 +5,6 @@
 GET {{apiurl}}/ HTTP/1.1
 Accept: application/json
 
-### Add piece
-POST {{apiurl}}/pieces/ HTTP/1.1
-Accept: application/json
-Content-Type: application/json
-
-{
-    "type": [0, 1],
-    "position": [1, 1]
-}
-
 ### Move piece
 PUT {{apiurl}}/pieces/ HTTP/1.1
 Accept: application/json
@@ -29,7 +19,15 @@ Content-Type: application/json
   }
 ]
 
-### Join a client
+### Clean board
+DELETE {{apiurl}}/board/ HTTP/1.1
+Accept: application/json
+
+### Rearrange board
+PUT {{apiurl}}/board/ HTTP/1.1
+Accept: application/json
+
+### Join a user
 POST {{apiurl}}/users/ HTTP/1.1
 Accept: application/json
 Content-Type: application/json
@@ -38,11 +36,11 @@ Content-Type: application/json
     "username": "Nuno"
 }
 
-### Get all clients
+### Get all users
 GET {{apiurl}}/users/ HTTP/1.1
 Accept: application/json
 
-### Leave a client
+### Leave a user
 DELETE {{apiurl}}/users/Karine HTTP/1.1
 
 ### Becoming a player/espectator
@@ -53,4 +51,14 @@ Content-Type: application/json
 {
     "username": "Windoh",
     "player": "false"
+}
+
+### Send a message
+POST {{apiurl}}/chat/ HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+
+{
+    "user": "Karine",
+    "content": "Mensagem qualquer"
 }
