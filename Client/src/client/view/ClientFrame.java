@@ -79,6 +79,7 @@ public class ClientFrame extends JFrame {
     private User myUser;
     
     private Thread upChess;
+    private Thread upUsers;
     
     private SquarePanel firstClick;
     private SquarePanel secondClick;
@@ -575,11 +576,6 @@ public class ClientFrame extends JFrame {
 
     private void exitMenuItemActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK">
         
-        if(upChess != null && upChess.isAlive()){
-            upChess.interrupt();
-            System.out.println("Thread upChess interrompida.");
-        }
-        
         if(myUser != null){
             leaveBtnActionPerformed(null);
             System.out.println("Log out realizado.");
@@ -635,24 +631,24 @@ public class ClientFrame extends JFrame {
         
         System.out.println(resp.toString());
                 
-        if(codeResp == 204){
-            myUser.setPlayer(sendUser.isPlayer());
+        if(codeResp == 200){
+            myUser = resp.readEntity(User.class);
             
-            if(sendUser.isPlayer()){
-                if(namePlayer1.getText().equals("Player 1")){
+            if(myUser.isPlayer()){
+                if(myUser.getPosition() == 1){
                     namePlayer1.setText(myUser.getUsername());
                 } else{
-                    if(namePlayer2.getText().equals("Player 2")){
+                    if(myUser.getPosition() == 2){
                         namePlayer2.setText(myUser.getUsername());
                     } else{
                         infoField.setText("erro ao alterar nome para jodador");
                     }
                 }
             } else{
-              if(myUser.getPosition() == 1){
+              if(namePlayer1.getText().equals(myUser.getUsername())){
                   namePlayer1.setText("Player 1");
               } else{
-                  if(myUser.getPosition() == 2){
+                  if(namePlayer2.getText().equals(myUser.getUsername())){
                     namePlayer2.setText("Player 2");
                   } else{
                         infoField.setText("erro ao alterar nome para padrão");
@@ -661,10 +657,12 @@ public class ClientFrame extends JFrame {
             }
             
             decideBtns();
+            startGame();
         }
         else{
             infoField.setText("Erro ao tornar observador|jogador");
         }
+        resp.close();
     }// </editor-fold>
     
     private void rearrangeButtonActionPerformed(ActionEvent evt) {                                                
@@ -694,6 +692,17 @@ public class ClientFrame extends JFrame {
         resp.close();
         
         if(codeResp == 204){
+            
+            if(upChess != null && upChess.isAlive()){
+                upChess.interrupt();
+                System.out.println("Thread upChess interrompida.");
+            }
+
+            if(upUsers != null && upUsers.isAlive()){
+                upUsers.interrupt();
+                System.out.println("Thread upUsers interrompida.");
+            }
+            
             chessBoard.removeAll();
             player1SpareBoard.removeAll();
             player2SpareBoard.removeAll();
@@ -775,24 +784,7 @@ public class ClientFrame extends JFrame {
                 if(codeResp == 200){
 
                     List<User> users = resp.readEntity(new GenericType<List<User>>(){});
-                    String observersName = "";
-
-                    for (User user : users) {
-                        if(user.isPlayer()){
-                            if(user.getPosition() == 1){
-                                namePlayer1.setText(user.getUsername());
-                            } else{
-                                namePlayer2.setText(user.getUsername());
-                            }
-                        } else{
-                            observersName += "|  "+user.getUsername()+"  |";
-                        }
-                        if(user.getUsername().equals(newCliente.getUsername())){
-                            myUser = user;
-                        }   
-                    }
-
-                    observeField.setText(observersName);
+                    setUsers(users, newCliente.getUsername());
 
                     decideBtns();
                     panelBtns.setVisible(true);
@@ -828,6 +820,15 @@ public class ClientFrame extends JFrame {
                         }
                     });
                     upChess.start();
+                    
+                    // thread de atualização do jogo
+                    upUsers = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            threadUsersAsync();
+                        }
+                    });
+                    upUsers.start();
 
                 }
                 else
@@ -842,10 +843,33 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
     
+    private void threadUsersAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
+        while (true) { 
+            Response resp = client.target(baseUri)
+                    .path("users-async")
+                    .request()
+                    .accept("application/json")
+                    .get();
+
+            int codeResp = resp.getStatus();
+
+            System.out.println(resp.toString());
+
+            if(codeResp == 200){
+                List<User> users = resp.readEntity(new GenericType<List<User>>(){});
+                setUsers(users, myUser.getUsername());
+            }
+            else {
+                infoField.setText("Erro desconhecido: "+codeResp);
+            }
+            resp.close();
+        }
+    }// </editor-fold>
+    
     private void threadGameAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
         while (true) { 
             Response resp = client.target(baseUri)
-                    .path("async")
+                    .path("chess-async")
                     .request()
                     .accept("application/json")
                     .get();
@@ -982,6 +1006,26 @@ public class ClientFrame extends JFrame {
         player1SpareBoard.repaint();
         player2SpareBoard.repaint();
     }// </editor-fold>
+    
+    public void setUsers(List<User> users, String usernameNewCliente){
+        String observersName = "";
+
+        for (User user : users) {
+            if(user.isPlayer()){
+                if(user.getPosition() == 1){
+                    namePlayer1.setText(user.getUsername());
+                } else{
+                    namePlayer2.setText(user.getUsername());
+                }
+            } else{
+                observersName += "|  "+user.getUsername()+"  |";
+            }
+            if(user.getUsername().equals(usernameNewCliente)){
+                myUser = user;
+            }   
+        }
+        observeField.setText(observersName);
+    }
     
     public static void main(String args[]) { // <editor-fold defaultstate="collapsed" desc="OK">
         /* Set the Nimbus look and feel */

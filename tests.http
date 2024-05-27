@@ -51,6 +51,6 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "username": "Nuno",
-    "player": "true"
+    "username": "Windoh",
+    "player": "false"
 }
