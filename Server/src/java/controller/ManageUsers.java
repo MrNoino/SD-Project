@@ -4,22 +4,22 @@ import java.util.ArrayList;
 import model.User;
 
 public class ManageUsers {
-    private ArrayList<User> clients;
+    private ArrayList<User> users;
     
     public ManageUsers(){
-        this.clients = new ArrayList<User>();
-/*        this.addUser(new User("Mr.Noino", true, (byte) 1));
+/*        this.users = new ArrayList<User>();
+        this.addUser(new User("Mr.Noino", true, (byte) 1));
         this.addUser(new User("Karine", true, (byte) 2));
         this.addUser(new User("Windoh", false, (byte) 0));*/
     }
     
     public synchronized ArrayList<User> getUsers(){
-        return this.clients;
+        return this.users;
     }
     
     public User getUser(String username){
-        synchronized (this.clients) {
-            for(User client: this.clients){
+        synchronized (this.users) {
+            for(User client: this.users){
                 if(client.getUsername().equals(username)){
                     return client;
                 }
@@ -30,8 +30,8 @@ public class ManageUsers {
     
     public int getNumberOfPlayers(){
         int quantity = 0;
-        synchronized (this.clients) {
-            for(User client: this.clients){
+        synchronized (this.users) {
+            for(User client: this.users){
                 if(client.isPlayer()){
                     quantity++;
                 }
@@ -46,10 +46,10 @@ public class ManageUsers {
         }
         //set if it is player by checking if are less than 2 players
         client.setPlayer(this.getNumberOfPlayers() < 2);
-        synchronized(this.clients){
+        synchronized(this.users){
             if(client.isPlayer()){
                 boolean firstPositionTaken = false;
-                for(User c : this.clients){
+                for(User c : this.users){
                     if(c.getPosition() == 1){
                         firstPositionTaken = true;
                         break;
@@ -57,15 +57,15 @@ public class ManageUsers {
                 }
                 client.setPosition((firstPositionTaken) ? (byte) 2 : (byte) 1);
             }
-            return this.clients.add(client);
+            return this.users.add(client);
         }
     }
     
     public boolean removeUser(String username){
-        synchronized(this.clients){
-            for(User client: this.clients){
+        synchronized(this.users){
+            for(User client: this.users){
                 if(client.getUsername().equals(username)){
-                    return this.clients.remove(client);
+                    return this.users.remove(client);
                 }
             }
         }
@@ -80,24 +80,38 @@ public class ManageUsers {
         }
         int indexOfUser = -1;
         byte takenPosition = -1;
-        for(int i = 0; i < this.clients.size(); i++){
-            if(this.clients.get(i).getUsername().equals(username)){
-                this.clients.get(i).setPlayer(isPlayer);
+        for(int i = 0; i < this.users.size(); i++){
+            if(this.users.get(i).getUsername().equals(username)){
+                this.users.get(i).setPlayer(isPlayer);
                 indexOfUser = i;
             }
-            if(this.clients.get(i).getPosition() != 0){
-                takenPosition = this.clients.get(i).getPosition();
+            if(this.users.get(i).getPosition() != 0){
+                takenPosition = this.users.get(i).getPosition();
             }
         }
         if(indexOfUser != -1){
             if(!isPlayer){
-                this.clients.get(indexOfUser).setPosition((byte)0);
+                this.users.get(indexOfUser).setPosition((byte)0);
             }else if(takenPosition == 1){
-                this.clients.get(indexOfUser).setPosition((byte)2);
+                this.users.get(indexOfUser).setPosition((byte)2);
             }else{
-                this.clients.get(indexOfUser).setPosition((byte)1);
+                this.users.get(indexOfUser).setPosition((byte)1);
             }
-            return this.clients.get(indexOfUser);
+            return this.users.get(indexOfUser);
+        }
+        return null;
+    }
+    
+    public synchronized User changePosition(String username){
+        if(this.getNumberOfPlayers() == 2){
+            return null;
+        }
+        for(int i = 0; i < this.users.size(); i++){
+            if(this.users.get(i).getUsername().equals(username)){
+                this.users.get(i).setPosition(this.users.get(i).getPosition() == 1 ? (byte) 2 : (byte) 1);
+                return this.users.get(i);
+            }
+            
         }
         return null;
     }

@@ -131,11 +131,18 @@ public class ChessResource{
         }
     }
     
-    @Path("users")
+    @Path("users/{field}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public User changeStatus(User user){
-        User u = manageUsers.changeStatus(user.getUsername(), user.isPlayer());
+    public User changeStatus(@PathParam("field") String field, User user){
+        User u;
+        if(field.equals("status"))
+            u = this.manageUsers.changeStatus(user.getUsername(), user.isPlayer());
+        else if(field.equals("position"))
+            u = this.manageUsers.changePosition(user.getUsername());
+        else
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        
         if(u == null){
             throw new WebApplicationException(Response.Status.CONFLICT);
         }

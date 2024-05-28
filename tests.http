@@ -44,13 +44,22 @@ Accept: application/json
 DELETE {{apiurl}}/users/Karine HTTP/1.1
 
 ### Becoming a player/espectator
-PUT {{apiurl}}/users/ HTTP/1.1
+PUT {{apiurl}}/users/status HTTP/1.1
 Accept: application/json
 Content-Type: application/json
 
 {
     "username": "Windoh",
     "player": "false"
+}
+
+### Change position
+PUT {{apiurl}}/users/position HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "Nuno"
 }
 
 ### Send a message
