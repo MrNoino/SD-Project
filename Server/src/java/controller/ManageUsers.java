@@ -108,6 +108,8 @@ public class ManageUsers {
         }
         for(int i = 0; i < this.users.size(); i++){
             if(this.users.get(i).getUsername().equals(username)){
+                if(this.users.get(i).getPosition() == 0)
+                    return null;
                 this.users.get(i).setPosition(this.users.get(i).getPosition() == 1 ? (byte) 2 : (byte) 1);
                 return this.users.get(i);
             }

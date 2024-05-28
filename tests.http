@@ -59,7 +59,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "username": "Nuno"
+    "username": "Karine"
 }
 
 ### Send a message
