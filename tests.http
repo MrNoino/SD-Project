@@ -41,7 +41,7 @@ GET {{apiurl}}/users/ HTTP/1.1
 Accept: application/json
 
 ### Leave a user
-DELETE {{apiurl}}/users/Karine HTTP/1.1
+DELETE {{apiurl}}/users/Nuno HTTP/1.1
 
 ### Becoming a player/espectator
 PUT {{apiurl}}/users/status HTTP/1.1
@@ -49,8 +49,8 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "username": "Windoh",
-    "player": "false"
+    "username": "Nuno",
+    "player": "true"
 }
 
 ### Change position
@@ -59,7 +59,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "username": "Karine"
+    "username": "Nuno"
 }
 
 ### Send a message

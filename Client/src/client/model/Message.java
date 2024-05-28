@@ -21,4 +21,11 @@ public class Message {
     public void setUser(String user) {
         this.user = user;
     }
+
+    @Override
+    public String toString() {
+        return user + ": " + content + "\n";
+    }
+    
+    
 }

@@ -83,7 +83,6 @@ public class ChessResource{
     
     @Path("board/{action}")
     @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response cleanBoard(@PathParam("action") String action){
         if(action.equals("clean"))
             this.chess.cleanBoard();

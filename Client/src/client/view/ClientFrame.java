@@ -61,16 +61,14 @@ public class ClientFrame extends JFrame {
     private JMenu fileMenu;
     private JMenuBar menuBar;
     private JMenuItem exitMenuItem;
-    private JMenuItem saveAsMenuItem;
-    private JMenuItem saveMenuItem;
-    private JMenuItem openMenuItem;
     
     private JPanel panelBtns;
     private JButton observerButton;
     private JButton positionButton;
     private JButton rearrangeButton;
     private JButton cleanButton;
-    private JButton flipButton;
+//    private JButton flipButton;
+    private JLabel erroField;
         
     private SquarePanel[][] board = new SquarePanel[8][8];
     
@@ -101,6 +99,7 @@ public class ClientFrame extends JFrame {
         ipField.setText("localhost");
         portField.setText("8080");
         titleGame.setText("Please, enter a game.");
+        titleGame.setForeground(new Color(51, 51, 51));
         sendBtn.setEnabled(false);
         messagesArea.setEnabled(false);
         messageField.setEditable(false);
@@ -159,13 +158,11 @@ public class ClientFrame extends JFrame {
         rearrangeButton = new JButton();
         cleanButton = new JButton();
         positionButton = new JButton();
-        flipButton = new JButton();
+//        flipButton = new JButton();
+        erroField = new JLabel();
         
         menuBar = new JMenuBar();
         fileMenu = new JMenu();
-        openMenuItem = new JMenuItem();
-        saveMenuItem = new JMenuItem();
-        saveAsMenuItem = new JMenuItem();
         exitMenuItem = new JMenuItem();
 
         
@@ -238,9 +235,9 @@ public class ClientFrame extends JFrame {
         configPanel.setBorder(BorderFactory.createEtchedBorder());
         configPanel.setMaximumSize(new Dimension(600, 100));
 
-        portField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                portFieldActionPerformed(evt);
+        portField.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent evt) {
+                portFieldKeyTyped(evt);
             }
         });
 
@@ -312,7 +309,6 @@ public class ClientFrame extends JFrame {
         titleGame.setFont(new Font("Gill Sans MT", 0, 18)); // NOI18N
         titleGame.setForeground(new Color(51, 51, 51));
         titleGame.setHorizontalAlignment(SwingConstants.CENTER);
-        titleGame.setText("jLabel1");
         titleGame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         titleGame.setFocusable(false);
         titleGame.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -483,17 +479,31 @@ public class ClientFrame extends JFrame {
 
         cleanButton.setText("Clean board");
         cleanButton.setPreferredSize(new Dimension(100, 30));
+        cleanButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                cleanButtonActionPerformed(evt);
+            }
+        });
 
         positionButton.setText("Change position");
         positionButton.setPreferredSize(new Dimension(120, 30));
-
-        flipButton.setText("Flip board");
-        flipButton.setPreferredSize(new Dimension(90, 30));
-        flipButton.addActionListener(new ActionListener() {
+        positionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                flipButtonActionPerformed(evt);
+                positionButtonActionPerformed(evt);
             }
         });
+
+//        flipButton.setText("Flip board");
+//        flipButton.setPreferredSize(new Dimension(90, 30));
+//        flipButton.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent evt) {
+//                flipButtonActionPerformed(evt);
+//            }
+//        });
+
+        erroField.setText("");
+        erroField.setHorizontalTextPosition(SwingConstants.CENTER);
+        erroField.setForeground(new Color(255,51,51));
 
         GroupLayout jPanel1Layout = new GroupLayout(panelBtns);
         panelBtns.setLayout(jPanel1Layout);
@@ -502,8 +512,8 @@ public class ClientFrame extends JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(observerButton, GroupLayout.PREFERRED_SIZE, 102, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 638, Short.MAX_VALUE)
-                .addComponent(flipButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(erroField, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cleanButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -519,29 +529,17 @@ public class ClientFrame extends JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(observerButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(flipButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(cleanButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(rearrangeButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(positionButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(positionButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(erroField, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(8, Short.MAX_VALUE))
         );
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
 
-        openMenuItem.setMnemonic('o');
-        openMenuItem.setText("Open");
-        fileMenu.add(openMenuItem);
-
-        saveMenuItem.setMnemonic('s');
-        saveMenuItem.setText("Save");
-        fileMenu.add(saveMenuItem);
-
-        saveAsMenuItem.setMnemonic('a');
-        saveAsMenuItem.setText("Save As ...");
-        saveAsMenuItem.setDisplayedMnemonicIndex(5);
-        fileMenu.add(saveAsMenuItem);
 
         exitMenuItem.setMnemonic('x');
         exitMenuItem.setText("Exit");
@@ -593,7 +591,7 @@ public class ClientFrame extends JFrame {
         String txt = this.messageField.getText();
         
         if (txt.isEmpty() || txt.isBlank()) {
-            this.infoField.setText("Message field may not be empty.");
+            this.infoField.setText("Mensagem não deve estar vazio.");
         } else {
             Message msg = new Message();
             msg.setContent(txt);
@@ -637,13 +635,20 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
 
+    private void portFieldKeyTyped(KeyEvent evt) {                                          
+        // TODO add your handling code here:
+        if ( !Character.isDigit(evt.getKeyChar()) ) {
+            evt.consume();
+        }
+    }
+
     private void observerButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
-        
+        erroField.setText("");
         User sendUser = new User();
         sendUser.setUsername(myUser.getUsername());
         sendUser.setPlayer(!myUser.isPlayer());
         
-        Response resp = client.target(baseUri+"users/")
+        Response resp = client.target(baseUri+"users/status")
             .request()
             .put(Entity.json(sendUser));
         
@@ -658,32 +663,85 @@ public class ClientFrame extends JFrame {
             startGame();
         } else{
             if(codeResp == 409){
-                infoField.setText("Vagas de Jogadores preenchidas.");
+                erroField.setText("Vagas de jogadores preenchidas.");
             }
             else{
-                infoField.setText("Erro ao tornar observador|jogador.");
+                erroField.setText("Erro ao tornar observador|jogador.");
             }
         }
         
         resp.close();
     }// </editor-fold>
     
-    private void rearrangeButtonActionPerformed(ActionEvent evt) {                                                
-        // TODO add your handling code here:
-    }
-
-    private void flipButtonActionPerformed(ActionEvent evt) {                                           
-        // TODO add your handling code here:
-    }
-
-    private void portFieldActionPerformed(ActionEvent evt) {                                          
-        // TODO add your handling code here:
-        // verificar se é numero?
-    }
+    private void positionButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+        
+        erroField.setText("");
+        User sendUser = new User();
+        sendUser.setUsername(myUser.getUsername());
+        
+        Response resp = client.target(baseUri+"users/position")
+            .request()
+            .put(Entity.json(sendUser));
+        
+        int codeResp = resp.getStatus();
+        
+        System.out.println(resp.toString());
+                
+        if(codeResp == 200){
+            myUser = resp.readEntity(User.class);
+        } else{
+            if(codeResp == 409){
+                erroField.setText("Vagas de jogador preenchida.");
+            }
+            else{
+                erroField.setText("Erro ao tornar trocar posição.");
+            }
+        }
+        
+        resp.close();
+    }// </editor-fold>
+    
+    private void cleanButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+                
+        erroField.setText("");
+        Response resp = client.target(baseUri)
+            .path("board/clean")
+            .request()
+            .put(Entity.text(""));
+        
+        int codeResp = resp.getStatus();
+        
+        System.out.println(resp.toString());
+                
+        if(codeResp != 204){
+            erroField.setText("Erro ao limpar tabuleiro.");
+        }
+        
+        resp.close();
+    }// </editor-fold>
+    
+    private void rearrangeButtonActionPerformed(ActionEvent evt) {// <editor-fold defaultstate="collapsed" desc="OK"> 
+                
+        erroField.setText("");
+        Response resp = client.target(baseUri)
+            .path("board/rearrange")
+            .request()
+            .put(Entity.text(""));
+        
+        int codeResp = resp.getStatus();
+        
+        System.out.println(resp.toString());
+                
+        if(codeResp != 204){
+            erroField.setText("Erro ao arrumar tabuleiro.");
+        }
+        
+        resp.close();
+    }// </editor-fold>
 
     private void leaveBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
 
-        infoField.setText("");
+        erroField.setText("");
         
         Response resp = client.target(baseUri+"users/")
                               .path(myUser.getUsername())
@@ -734,7 +792,6 @@ public class ClientFrame extends JFrame {
             leaveBtn.setEnabled(false);
             messagesArea.setText("");
             messageField.setText("");
-            infoField.setText("");
             joinBtn.setEnabled(true);
 
             ipField.setEditable(true);
@@ -750,16 +807,18 @@ public class ClientFrame extends JFrame {
             messageField.setEditable(false);
             messageField.setEnabled(false);
             sendBtn.setEnabled(false);
-        } else{
-            infoField.setText("Erro desconhecido");
+            
+            myUser = null;
+            client.close();
+        } 
+        else{
+            erroField.setText("Erro :(");
         }
-        myUser = null;
-        client.close();
     }// </editor-fold>
 
     private void joinBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+                
         infoField.setText("");
-        
         if(ipField.getText().isEmpty() || portField.getText().isEmpty() || nameField.getText().isEmpty()){
             infoField.setText("Todos os campos devem ser preenchidos.");
         } else{            
@@ -777,10 +836,12 @@ public class ClientFrame extends JFrame {
                 .post(Entity.json(newCliente));
             } catch (ResponseProcessingException ex){
                 System.out.println(ex);
-                infoField.setText("Erro desconhecido");
+                titleGame.setText("Erro :(");
+                titleGame.setForeground(new Color(255, 51, 51));
             } catch (IllegalArgumentException | ProcessingException ex){
                 System.out.println(ex);
-                infoField.setText("Erro ao encontrar servidor, rever endereço de servidor.");
+                titleGame.setText("Erro ao encontrar servidor, rever endereço de servidor.");
+                titleGame.setForeground(new Color(255, 51, 51));
             }
 
             if(resp != null){
@@ -811,6 +872,7 @@ public class ClientFrame extends JFrame {
 
                     //Arruma chat
                     titleGame.setText("Game on.");
+                    titleGame.setForeground(new Color(51, 51, 51));
                     messagesArea.setEnabled(true);
                     messageField.setEditable(true);
                     messageField.setEnabled(true);
@@ -850,9 +912,12 @@ public class ClientFrame extends JFrame {
                 }
                 else
                     if( codeResp == 409){
-                        infoField.setText("Nome inválido.");
+                        titleGame.setText("Nome inválido.");
+                        titleGame.setForeground(new Color(255, 51, 51));
                     } else {
-                        infoField.setText("Erro desconhecido: "+codeResp);
+                        titleGame.setText("Erro :(");
+                        titleGame.setForeground(new Color(255, 51, 51));
+                        System.out.println("Erro desconhecido: "+codeResp);
                     }
 
                 resp.close();
@@ -861,7 +926,7 @@ public class ClientFrame extends JFrame {
     }// </editor-fold>
     
     private void threadUsersAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
-        while (true) { 
+        while (true) {
             Response resp = client.target(baseUri)
                     .path("users-async")
                     .request()
@@ -877,7 +942,7 @@ public class ClientFrame extends JFrame {
                 setUsers(users, myUser.getUsername());
             }
             else {
-                infoField.setText("Erro desconhecido: "+codeResp);
+                System.out.println("Erro desconhecido na threadUsersAsync: "+codeResp);
             }
             resp.close();
         }
@@ -897,10 +962,10 @@ public class ClientFrame extends JFrame {
 
             if(codeResp == 200){
                 Message msg = resp.readEntity(Message.class);
-                messagesArea.append(msg.getUser()+": "+msg.getContent()+"\n");
+                messagesArea.append(msg.toString());
             }
             else {
-                infoField.setText("Erro desconhecido: "+codeResp);
+                System.out.println("Erro desconhecido na threadChatAsync: "+codeResp);
             }
             resp.close();
         }
@@ -923,13 +988,14 @@ public class ClientFrame extends JFrame {
                 setBoard(chess);
             }
             else {
-                infoField.setText("Erro ao receber jogo.");
+                System.out.println("Erro desconhecido na threadGameAsync: "+codeResp);
             }
             resp.close();
         }
     }// </editor-fold>
     
     private void startGame() { // <editor-fold defaultstate="collapsed" desc="OK"> 
+        erroField.setText("");
         Response resp = client.target(baseUri)
             .request()
             .accept("application/json")
@@ -944,7 +1010,7 @@ public class ClientFrame extends JFrame {
             setBoard(chess);
         }
         else
-            infoField.setText("Erro ao receber jogo.");
+            erroField.setText("Erro ao receber jogo.");
         resp.close();
     }// </editor-fold>
 
@@ -952,14 +1018,14 @@ public class ClientFrame extends JFrame {
         if(myUser.isPlayer()){
             observerButton.setText("Turn observer");
             cleanButton.setVisible(true);
-            flipButton.setVisible(true);
+//            flipButton.setVisible(true);
             rearrangeButton.setVisible(true);
             positionButton.setVisible(true);
         }
         else{
             observerButton.setText("Turn player");
             cleanButton.setVisible(false);
-            flipButton.setVisible(false);
+//            flipButton.setVisible(false);
             rearrangeButton.setVisible(false);
             positionButton.setVisible(false);
         }
@@ -967,8 +1033,10 @@ public class ClientFrame extends JFrame {
     
     public void selected(SquarePanel sp) { // <editor-fold defaultstate="collapsed" desc="OK">
         Piece piece = sp.getPiece();
-        System.out.printf("mouse pressed at: %d-%d - %d-%d\n", piece.getType()[0], piece.getType()[1], piece.getPosition()[0], piece.getPosition()[1]);
-       
+        
+//        if(firstClick == null && piece.getType().length > 0 && piece.getType()[0] != -1){
+//            firstClick = sp;
+//        } else {
         if(piece.getType().length > 0 && piece.getType()[0] == myUser.getPosition()-1){
             firstClick = sp;
         } else {
@@ -990,7 +1058,7 @@ public class ClientFrame extends JFrame {
                     firstClick = null;
                 }
                 else {
-                    infoField.setText("Erro ao realizar jogada jogo.");
+                    erroField.setText("Erro ao realizar jogada.");
                 }
             }
         }
@@ -1032,11 +1100,11 @@ public class ClientFrame extends JFrame {
             sq.setBackgroundColor(myUser.getPosition() == 1);
                     
             if(myUser.getPosition() == 1){
-                if(player1SpareBoard.getComponentCount() == 0){
+                if(player1SpareBoard.getComponentCount() < 16){
                     player1SpareBoard.add(sq);
                 }
             } else{
-                if(player2SpareBoard.getComponentCount() == 0){
+                if(player2SpareBoard.getComponentCount() < 16){
                     player2SpareBoard.add(sq);
                 }
             }
