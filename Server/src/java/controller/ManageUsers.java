@@ -7,8 +7,8 @@ public class ManageUsers {
     private ArrayList<User> users;
     
     public ManageUsers(){
-/*        this.users = new ArrayList<User>();
-        this.addUser(new User("Mr.Noino", true, (byte) 1));
+        this.users = new ArrayList<User>();
+/*        this.addUser(new User("Mr.Noino", true, (byte) 1));
         this.addUser(new User("Karine", true, (byte) 2));
         this.addUser(new User("Windoh", false, (byte) 0));*/
     }
@@ -19,9 +19,9 @@ public class ManageUsers {
     
     public User getUser(String username){
         synchronized (this.users) {
-            for(User client: this.users){
-                if(client.getUsername().equals(username)){
-                    return client;
+            for(User user: this.users){
+                if(user.getUsername().equals(username)){
+                    return user;
                 }
             }
         }
@@ -31,8 +31,8 @@ public class ManageUsers {
     public int getNumberOfPlayers(){
         int quantity = 0;
         synchronized (this.users) {
-            for(User client: this.users){
-                if(client.isPlayer()){
+            for(User user: this.users){
+                if(user.isPlayer()){
                     quantity++;
                 }
             }
@@ -40,14 +40,14 @@ public class ManageUsers {
         return quantity;
     }
     
-    public boolean addUser(User client){
-        if(this.getUser(client.getUsername()) != null){
+    public boolean addUser(User user){
+        if(this.getUser(user.getUsername()) != null){
             return false;
         }
         //set if it is player by checking if are less than 2 players
-        client.setPlayer(this.getNumberOfPlayers() < 2);
+        user.setPlayer(this.getNumberOfPlayers() < 2);
         synchronized(this.users){
-            if(client.isPlayer()){
+            if(user.isPlayer()){
                 boolean firstPositionTaken = false;
                 for(User c : this.users){
                     if(c.getPosition() == 1){
@@ -55,17 +55,17 @@ public class ManageUsers {
                         break;
                     }
                 }
-                client.setPosition((firstPositionTaken) ? (byte) 2 : (byte) 1);
+                user.setPosition((firstPositionTaken) ? (byte) 2 : (byte) 1);
             }
-            return this.users.add(client);
+            return this.users.add(user);
         }
     }
     
     public boolean removeUser(String username){
         synchronized(this.users){
-            for(User client: this.users){
-                if(client.getUsername().equals(username)){
-                    return this.users.remove(client);
+            for(User user: this.users){
+                if(user.getUsername().equals(username)){
+                    return this.users.remove(user);
                 }
             }
         }
