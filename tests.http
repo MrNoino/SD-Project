@@ -20,11 +20,11 @@ Content-Type: application/json
 ]
 
 ### Clean board
-DELETE {{apiurl}}/board/ HTTP/1.1
+PUT {{apiurl}}/board/clean HTTP/1.1
 Accept: application/json
 
 ### Rearrange board
-PUT {{apiurl}}/board/ HTTP/1.1
+PUT {{apiurl}}/board/rearrange HTTP/1.1
 Accept: application/json
 
 ### Join a user

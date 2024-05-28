@@ -81,20 +81,16 @@ public class ChessResource{
     
     // *** BOARD ***
     
-    @Path("board")
-    @DELETE
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response cleanBoard(){
-        this.chess.cleanBoard();
-        this.manageListeners.sendToChessListeners(this.chess);
-        return Response.noContent().build();
-    }
-    
-    @Path("board")
+    @Path("board/{action}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response rearrangeBoard(){
-        this.chess.initializeBoard();
+    public Response cleanBoard(@PathParam("action") String action){
+        if(action.equals("clean"))
+            this.chess.cleanBoard();
+        else if(action.equals("rearrange"))
+            this.chess.initializeBoard();
+        else
+            throw  new WebApplicationException(Response.Status.BAD_REQUEST);
         this.manageListeners.sendToChessListeners(this.chess);
         return Response.noContent().build();
     }
