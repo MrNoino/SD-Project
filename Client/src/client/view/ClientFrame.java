@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class ClientFrame extends JFrame {
     
-    // <editor-fold defaultstate="collapsed" desc="Variables declaration">
+    // <editor-fold defaultstate="collapsed" desc="Variables declaration - View">
     private JPanel mainPainel; 
     
     private JPanel flexPanel;
@@ -67,9 +67,12 @@ public class ClientFrame extends JFrame {
     private JButton positionButton;
     private JButton rearrangeButton;
     private JButton cleanButton;
-//    private JButton flipButton;
+    private JButton flipButton;
+    private boolean flipButtonOrganizer;
     private JLabel erroField;
-        
+    
+    //</editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Variables declaration - Controller">
     private SquarePanel[][] board = new SquarePanel[8][8];
     
     static Client client;
@@ -84,7 +87,6 @@ public class ClientFrame extends JFrame {
     private SquarePanel firstClick;
     private SquarePanel secondClick;
     
-    // End of variables declaration
     //</editor-fold>
 
     public ClientFrame() { // <editor-fold defaultstate="collapsed" desc="OK"> 
@@ -158,7 +160,8 @@ public class ClientFrame extends JFrame {
         rearrangeButton = new JButton();
         cleanButton = new JButton();
         positionButton = new JButton();
-//        flipButton = new JButton();
+        flipButton = new JButton();
+        flipButtonOrganizer = true;
         erroField = new JLabel();
         
         menuBar = new JMenuBar();
@@ -306,7 +309,7 @@ public class ClientFrame extends JFrame {
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        titleGame.setFont(new Font("Gill Sans MT", 0, 18)); // NOI18N
+        titleGame.setFont(new Font("Gill Sans MT", 0, 18));
         titleGame.setForeground(new Color(51, 51, 51));
         titleGame.setHorizontalAlignment(SwingConstants.CENTER);
         titleGame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -316,21 +319,10 @@ public class ClientFrame extends JFrame {
         gameBoard.setBorder(BorderFactory.createEtchedBorder());
         gameBoard.setMaximumSize(new Dimension(680, 468));
         gameBoard.setMinimumSize(new Dimension(680, 468));
-        gameBoard.setName(""); // NOI18N
+        gameBoard.setName("");
 
         chessBoard.setBorder(BorderFactory.createEtchedBorder());
         chessBoard.setPreferredSize(new Dimension(400, 400));
-
-        GroupLayout chessBoardLayout = new GroupLayout(chessBoard);
-        chessBoard.setLayout(chessBoardLayout);
-        chessBoardLayout.setHorizontalGroup(
-            chessBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 396, Short.MAX_VALUE)
-        );
-        chessBoardLayout.setVerticalGroup(
-            chessBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 396, Short.MAX_VALUE)
-        );
 
         player2SpareBoard.setBorder(BorderFactory.createEtchedBorder());
         player2SpareBoard.setPreferredSize(new Dimension(120, 400));
@@ -346,10 +338,10 @@ public class ClientFrame extends JFrame {
         player1SpareBoard.setLayout(player1SpareBoardLayout);
         
 
-        namePlayer2.setFont(new Font("Gill Sans MT", 0, 14)); // NOI18N
+        namePlayer2.setFont(new Font("Gill Sans MT", 0, 14));
         namePlayer2.setText("Player 2");
 
-        namePlayer1.setFont(new Font("Gill Sans MT", 0, 14)); // NOI18N
+        namePlayer1.setFont(new Font("Gill Sans MT", 0, 14));
         namePlayer1.setHorizontalAlignment(SwingConstants.TRAILING);
         namePlayer1.setText("Player 1");
 
@@ -400,14 +392,14 @@ public class ClientFrame extends JFrame {
         at.add(gameBoard);
         flexPanel.add(at, BorderLayout.CENTER);
         
-        observeLabel.setFont(new Font("Gill Sans MT", 0, 12)); // NOI18N
+        observeLabel.setFont(new Font("Gill Sans MT", 0, 12));
         observeLabel.setText("Observers: ");
 
         observeScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         observeField.setEditable(false);
         observeField.setFocusable(false);
-        observeField.setFont(new Font("Gill Sans MT", 0, 14)); // NOI18N
+        observeField.setFont(new Font("Gill Sans MT", 0, 14));
         observeField.setBackground(new Color(220,224,230));
         observeScroll.setViewportView(observeField);
         observeScroll.setEnabled(false);
@@ -493,27 +485,28 @@ public class ClientFrame extends JFrame {
             }
         });
 
-//        flipButton.setText("Flip board");
-//        flipButton.setPreferredSize(new Dimension(90, 30));
-//        flipButton.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent evt) {
-//                flipButtonActionPerformed(evt);
-//            }
-//        });
+        flipButton.setText("Flip board");
+        flipButton.setPreferredSize(new Dimension(90, 30));
+        flipButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                flipButtonActionPerformed(evt);
+            }
+        });
 
         erroField.setText("");
         erroField.setHorizontalTextPosition(SwingConstants.CENTER);
         erroField.setForeground(new Color(255,51,51));
 
-        GroupLayout jPanel1Layout = new GroupLayout(panelBtns);
-        panelBtns.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        GroupLayout panelBtnsLayout = new GroupLayout(panelBtns);
+        panelBtns.setLayout(panelBtnsLayout);
+        panelBtnsLayout.setHorizontalGroup(panelBtnsLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(panelBtnsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(observerButton, GroupLayout.PREFERRED_SIZE, 102, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(erroField, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(flipButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cleanButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -522,15 +515,15 @@ public class ClientFrame extends JFrame {
                 .addComponent(positionButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        panelBtnsLayout.setVerticalGroup(panelBtnsLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(panelBtnsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(panelBtnsLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                    .addGroup(panelBtnsLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(observerButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(cleanButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(cleanButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(flipButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(panelBtnsLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(rearrangeButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(positionButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(erroField, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -629,18 +622,133 @@ public class ClientFrame extends JFrame {
     }// </editor-fold>
     
     private void messageFieldKeyTyped(KeyEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
-        // TODO add your handling code here:
         if (evt.getKeyChar() == '\n') {
             sendBtnActionPerformed(null);
         }
     }// </editor-fold>
 
     private void portFieldKeyTyped(KeyEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
-        // TODO add your handling code here:
         if ( !Character.isDigit(evt.getKeyChar()) ) {
             evt.consume();
         }
     }// </editor-fold>
+
+    private void flipButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+        System.out.println(evt.getActionCommand());
+        
+        if(flipButtonOrganizer){
+            namePlayer1.setHorizontalAlignment(SwingConstants.LEADING);
+            namePlayer2.setHorizontalAlignment(SwingConstants.TRAILING);
+
+            GroupLayout gameBoardLayout = new GroupLayout(gameBoard);
+            gameBoard.setLayout(gameBoardLayout);
+            gameBoardLayout.setHorizontalGroup(
+                gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(gameBoardLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                        .addGroup(gameBoardLayout.createSequentialGroup()
+                            .addComponent(player1SpareBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(namePlayer1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(gameBoardLayout.createSequentialGroup()
+                            .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                .addGroup(gameBoardLayout.createSequentialGroup()
+                                    .addGap(132, 132, 132)
+                                    .addComponent(chessBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(namePlayer2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(player2SpareBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            gameBoardLayout.setVerticalGroup(
+                gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(gameBoardLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(gameBoardLayout.createSequentialGroup()
+                            .addComponent(namePlayer1, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                .addGroup(gameBoardLayout.createSequentialGroup()
+                                    .addGap(406, 406, 406)
+                                    .addComponent(namePlayer2, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(player2SpareBoard, GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)))
+                        .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                            .addComponent(chessBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(player1SpareBoard, GroupLayout.PREFERRED_SIZE, 426, GroupLayout.PREFERRED_SIZE)))
+                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            
+            flipBoard();
+            flipButtonOrganizer = false;
+        }
+        else{
+            namePlayer1.setHorizontalAlignment(SwingConstants.TRAILING);
+            namePlayer2.setHorizontalAlignment(SwingConstants.LEADING);
+            
+            GroupLayout gameBoardLayout = new GroupLayout(gameBoard);
+            gameBoard.setLayout(gameBoardLayout);
+            gameBoardLayout.setHorizontalGroup(
+                gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(gameBoardLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                        .addGroup(gameBoardLayout.createSequentialGroup()
+                            .addComponent(player2SpareBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(namePlayer2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(gameBoardLayout.createSequentialGroup()
+                            .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                .addGroup(gameBoardLayout.createSequentialGroup()
+                                    .addGap(132, 132, 132)
+                                    .addComponent(chessBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(namePlayer1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(player1SpareBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            gameBoardLayout.setVerticalGroup(
+                gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(gameBoardLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(gameBoardLayout.createSequentialGroup()
+                            .addComponent(namePlayer2, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                .addGroup(gameBoardLayout.createSequentialGroup()
+                                    .addGap(406, 406, 406)
+                                    .addComponent(namePlayer1, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(player1SpareBoard, GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)))
+                        .addGroup(gameBoardLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                            .addComponent(chessBoard, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(player2SpareBoard, GroupLayout.PREFERRED_SIZE, 426, GroupLayout.PREFERRED_SIZE)))
+                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            
+            flipBoard();
+            flipButtonOrganizer = true;
+        }
+    }// </editor-fold>
+    
+    private void flipBoard(){
+        chessBoard.removeAll();
+        if(flipButtonOrganizer) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    chessBoard.add(board[7 - i][7 - j]);
+                }
+            }
+        } else{
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    chessBoard.add(board[i][j]);
+                }
+            }
+        }
+        chessBoard.repaint();
+    }
 
     private void observerButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
         erroField.setText("");
@@ -757,17 +865,17 @@ public class ClientFrame extends JFrame {
             
             if(upChess != null && upChess.isAlive()){
                 upChess.interrupt();
-                System.out.println("Thread upChess interrompida.");
+                if(upChess.isInterrupted()) System.out.println("Thread upChess interrompida.");
             }
 
             if(upUsers != null && upUsers.isAlive()){
                 upUsers.interrupt();
-                System.out.println("Thread upUsers interrompida.");
+                if(upUsers.isInterrupted()) System.out.println("Thread upUsers interrompida.");
             }
 
             if(upChat != null && upChat.isAlive()){
                 upChat.interrupt();
-                System.out.println("Thread upChat interrompida.");
+                if(upChat.isInterrupted()) System.out.println("Thread upChat interrompida.");
             }
             
             chessBoard.removeAll();
@@ -928,70 +1036,93 @@ public class ClientFrame extends JFrame {
     
     private void threadUsersAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
         while (true) {
-            Response resp = client.target(baseUri)
-                    .path("users-async")
-                    .request()
-                    .accept("application/json")
-                    .get();
-
-            int codeResp = resp.getStatus();
-
-            System.out.println(resp.toString());
-
-            if(codeResp == 200){
-                List<User> users = resp.readEntity(new GenericType<List<User>>(){});
-                setUsers(users, myUser.getUsername());
+            Response resp = null;
+            try{
+                resp = client.target(baseUri)
+                        .path("users-async")
+                        .request()
+                        .accept("application/json")
+                        .get();
+            } catch(Exception ex){
+//                System.out.println(ex.getMessage());
+                break;
             }
-            else {
-                System.out.println("Erro desconhecido na threadUsersAsync: "+codeResp);
+            if(resp != null){
+                int codeResp = resp.getStatus();
+
+                System.out.println(resp.toString());
+
+                if(codeResp == 200){
+                    List<User> users = resp.readEntity(new GenericType<List<User>>(){});
+                    setUsers(users, myUser.getUsername());
+                }
+                else {
+                    System.out.println("Erro desconhecido na threadUsersAsync: "+codeResp);
+                }
+                resp.close();
             }
-            resp.close();
         }
     }// </editor-fold>
     
     private void threadChatAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
         while (true) { 
-            Response resp = client.target(baseUri)
-                    .path("chat-async")
-                    .request()
-                    .accept("application/json")
-                    .get();
-
-            int codeResp = resp.getStatus();
-
-            System.out.println(resp.toString());
-
-            if(codeResp == 200){
-                Message msg = resp.readEntity(Message.class);
-                messagesArea.append(msg.toString());
+            Response resp = null;
+            try{
+                resp = client.target(baseUri)
+                        .path("chat-async")
+                        .request()
+                        .accept("application/json")
+                        .get();
+            } catch(Exception ex){
+//                System.out.println(ex.getMessage());
+                break;
             }
-            else {
-                System.out.println("Erro desconhecido na threadChatAsync: "+codeResp);
+
+            if(resp != null){
+                int codeResp = resp.getStatus();
+
+                System.out.println(resp.toString());
+
+                if(codeResp == 200){
+                    Message msg = resp.readEntity(Message.class);
+                    messagesArea.append(msg.toString());
+                }
+                else {
+                    System.out.println("Erro desconhecido na threadChatAsync: "+codeResp);
+                }
+                resp.close();
             }
-            resp.close();
         }
     }// </editor-fold>
     
     private void threadGameAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
         while (true) { 
-            Response resp = client.target(baseUri)
-                    .path("chess-async")
-                    .request()
-                    .accept("application/json")
-                    .get();
-
-            int codeResp = resp.getStatus();
-
-            System.out.println(resp.toString());
-
-            if(codeResp == 200){
-                List<Piece> chess = resp.readEntity(new GenericType<List<Piece>>(){});
-                setBoard(chess);
+            Response resp = null;
+            try{
+                resp = client.target(baseUri)
+                        .path("chess-async")
+                        .request()
+                        .accept("application/json")
+                        .get();
+            } catch(Exception ex){
+//                System.out.println(ex.getMessage());
+                break;
             }
-            else {
-                System.out.println("Erro desconhecido na threadGameAsync: "+codeResp);
+
+            if(resp != null){
+                int codeResp = resp.getStatus();
+
+                System.out.println(resp.toString());
+
+                if(codeResp == 200){
+                    List<Piece> chess = resp.readEntity(new GenericType<List<Piece>>(){});
+                    setBoard(chess);
+                }
+                else {
+                    System.out.println("Erro desconhecido na threadGameAsync: "+codeResp);
+                }
+                resp.close();
             }
-            resp.close();
         }
     }// </editor-fold>
     
@@ -1021,14 +1152,14 @@ public class ClientFrame extends JFrame {
         if(myUser.isPlayer()){
             observerButton.setText("Turn observer");
             cleanButton.setVisible(true);
-//            flipButton.setVisible(true);
+            flipButton.setVisible(true);
             rearrangeButton.setVisible(true);
             positionButton.setVisible(true);
         }
         else{
             observerButton.setText("Turn player");
             cleanButton.setVisible(false);
-//            flipButton.setVisible(false);
+            flipButton.setVisible(false);
             rearrangeButton.setVisible(false);
             positionButton.setVisible(false);
         }
@@ -1038,27 +1169,14 @@ public class ClientFrame extends JFrame {
         erroField.setText("");
         Piece piece = sp.getPiece();
         
-//        if(firstClick == null){
-//            if(piece.getType().length > 0 && piece.getType()[0] != -1){
-//                firstClick = sp;
-//            }
-//        } else{
-//            if(piece.getType().length > 0 && piece.getType()[0] == firstClick.getPiece().getType()[0]){
-//                firstClick = sp;
-//            } else{
-//                //envia pedido
-//            }
-//        }
-//        
-//        
-//        if(firstClick == null && piece.getType().length > 0 && piece.getType()[0] != -1){
-//            firstClick = sp;
-//        } else {
-        if(piece.getType().length > 0 && piece.getType()[0] == myUser.getPosition()-1){
-            firstClick = sp;
-        } else {
-            if(firstClick != null){
-                
+        if(firstClick == null){
+            if(piece.getType().length > 0 && piece.getType()[0] != -1){
+                firstClick = sp;
+            }
+        } else{
+            if(piece.getType().length > 0 && piece.getType()[0] == firstClick.getPiece().getType()[0]){
+                firstClick = sp;
+            } else{
                 Piece[] send = new Piece[]{firstClick.getPiece(), piece};
                 
                 Response resp = client.target(baseUri)
@@ -1090,16 +1208,31 @@ public class ClientFrame extends JFrame {
         chessBoard.removeAll();
         player1SpareBoard.removeAll();
         player2SpareBoard.removeAll();
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, myUser.isPlayer());
-                sqPanel.setBackgroundColor((i + j) % 2 != 0);
-                board[i][j] = sqPanel;
-                chessBoard.add(sqPanel);
+        
+        if(flipButtonOrganizer) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    SquarePanel sqPanel = new SquarePanel((byte) i, (byte) j, this, myUser.isPlayer());
+                    sqPanel.setBackgroundColor((i + j) % 2 != 0);
+                    board[i][j] = sqPanel;
+                    chessBoard.add(sqPanel);
 
+                }
+            }
+        } else{
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    // Calcula a posição invertida
+                    int invI = 7 - i;
+                    int invJ = 7 - j;
+                    SquarePanel sqPanel = new SquarePanel((byte) invI, (byte) invJ, this, myUser.isPlayer());
+                    sqPanel.setBackgroundColor((invI + invJ) % 2 != 0);
+                    board[invI][invJ] = sqPanel;
+                    chessBoard.add(sqPanel);
+                }
             }
         }
-
+        
         for (Piece piece : chess) {
             byte[] position = piece.getPosition();
             byte[] piecetype = piece.getType();
