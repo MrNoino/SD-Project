@@ -74,9 +74,17 @@ public class ChessResource{
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response movePiece(Piece[] piece){
-        this.chess.moveChessPiece(piece[0],piece[1]);
-        this.manageListeners.sendToChessListeners(this.chess);
-        return Response.ok().build();
+        int code = this.chess.moveChessPiece(piece[0],piece[1]);
+        if( code == -1 ){
+            this.manageListeners.sendToChessListeners(this.chess);
+            return Response.ok().build();
+        } else{
+            if( code == 400 ){
+                throw new WebApplicationException(Response.Status.BAD_REQUEST);
+            } else{
+                throw new WebApplicationException(Response.Status.CONFLICT);
+            }
+        }
     }
     
     // *** BOARD ***
