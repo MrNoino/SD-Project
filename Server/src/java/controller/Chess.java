@@ -77,7 +77,7 @@ public class Chess {
                          return -1; //OK
                     } else{
                         System.out.println("Error: peças de mesmo jogador");
-                        return 400; //BadRequest
+                        return 409; //Conflict
                     }
                 }else{
                     p.setPosition(future.getPosition());

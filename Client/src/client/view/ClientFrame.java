@@ -635,12 +635,12 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
 
-    private void portFieldKeyTyped(KeyEvent evt) {                                          
+    private void portFieldKeyTyped(KeyEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
         // TODO add your handling code here:
         if ( !Character.isDigit(evt.getKeyChar()) ) {
             evt.consume();
         }
-    }
+    }// </editor-fold>
 
     private void observerButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
         erroField.setText("");
@@ -694,7 +694,7 @@ public class ClientFrame extends JFrame {
                 erroField.setText("Vagas de jogador preenchida.");
             }
             else{
-                erroField.setText("Erro ao tornar trocar posição.");
+                erroField.setText("Erro ao trocar posição.");
             }
         }
         
@@ -813,6 +813,7 @@ public class ClientFrame extends JFrame {
         } 
         else{
             erroField.setText("Erro :(");
+            System.out.println("Erro desconhecido on leave: "+codeResp);
         }
     }// </editor-fold>
 
@@ -910,16 +911,16 @@ public class ClientFrame extends JFrame {
                     });
                     upChat.start();
                 }
-                else
+                else{
                     if( codeResp == 409){
                         titleGame.setText("Nome inválido.");
                         titleGame.setForeground(new Color(255, 51, 51));
                     } else {
                         titleGame.setText("Erro :(");
                         titleGame.setForeground(new Color(255, 51, 51));
-                        System.out.println("Erro desconhecido: "+codeResp);
+                        System.out.println("Erro desconhecido on join: "+codeResp);
                     }
-
+                }
                 resp.close();
             }
         }
@@ -1009,8 +1010,10 @@ public class ClientFrame extends JFrame {
             List<Piece> chess = resp.readEntity(new GenericType<List<Piece>>(){});
             setBoard(chess);
         }
-        else
+        else{
             erroField.setText("Erro ao receber jogo.");
+            System.out.println("Erro desconhecido on startGame: "+codeResp);
+        }
         resp.close();
     }// </editor-fold>
 
@@ -1032,8 +1035,22 @@ public class ClientFrame extends JFrame {
     }// </editor-fold>
     
     public void selected(SquarePanel sp) { // <editor-fold defaultstate="collapsed" desc="OK">
+        erroField.setText("");
         Piece piece = sp.getPiece();
         
+//        if(firstClick == null){
+//            if(piece.getType().length > 0 && piece.getType()[0] != -1){
+//                firstClick = sp;
+//            }
+//        } else{
+//            if(piece.getType().length > 0 && piece.getType()[0] == firstClick.getPiece().getType()[0]){
+//                firstClick = sp;
+//            } else{
+//                //envia pedido
+//            }
+//        }
+//        
+//        
 //        if(firstClick == null && piece.getType().length > 0 && piece.getType()[0] != -1){
 //            firstClick = sp;
 //        } else {
@@ -1058,7 +1075,12 @@ public class ClientFrame extends JFrame {
                     firstClick = null;
                 }
                 else {
-                    erroField.setText("Erro ao realizar jogada.");
+                    if(codeResp == 409){
+                        erroField.setText("Movimento inválido.");
+                    } else{
+                        erroField.setText("Erro ao realizar jogada.");
+                        System.out.println("Erro desconhecido move piece: "+codeResp);
+                    }
                 }
             }
         }
@@ -1096,17 +1118,15 @@ public class ClientFrame extends JFrame {
         }
         
         if(myUser.isPlayer()){
-            SquarePanel sq = new SquarePanel((byte) -1, (byte) -1, this, myUser.isPlayer());
-            sq.setBackgroundColor(myUser.getPosition() == 1);
-                    
-            if(myUser.getPosition() == 1){
-                if(player1SpareBoard.getComponentCount() < 16){
-                    player1SpareBoard.add(sq);
-                }
-            } else{
-                if(player2SpareBoard.getComponentCount() < 16){
-                    player2SpareBoard.add(sq);
-                }
+            SquarePanel sq1 = new SquarePanel((byte) -1, (byte) -1, this, myUser.isPlayer());
+            sq1.setBackgroundColor(true);
+            if(player1SpareBoard.getComponentCount() < 16){
+                player1SpareBoard.add(sq1);
+            }
+            SquarePanel sq2 = new SquarePanel((byte) -1, (byte) -1, this, myUser.isPlayer());
+            sq2.setBackgroundColor(false);
+            if(player2SpareBoard.getComponentCount() < 16){
+                player2SpareBoard.add(sq2);
             }
         }
 
