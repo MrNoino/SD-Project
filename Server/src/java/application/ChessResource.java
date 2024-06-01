@@ -72,13 +72,17 @@ public class ChessResource {
     public Response movePiece(Piece[] piece) {
         int code = this.chess.moveChessPiece(piece[0], piece[1]);
         if (code == -1) {
-            char position1 = 'a',
-                    position2 = 'a';
-            position1 += piece[0].getPosition()[1] >= 0 ? piece[0].getPosition()[1] : -49;
-            position2 += piece[1].getPosition()[1] >= 0 ? piece[1].getPosition()[1] : -49;
-            System.out.println(position1 + String.valueOf(piece[0].getPosition()[0] + 1)
-                    + "-"
-                    + position2 + String.valueOf(piece[1].getPosition()[0] + 1));
+            char position1column = 'a',
+                    position2column = 'a';
+            String position1row, position2row;
+            
+            position1column += piece[0].getPosition()[1] >= 0 ? piece[0].getPosition()[1] : -49;
+            position2column += piece[1].getPosition()[1] >= 0 ? piece[1].getPosition()[1] : -49;
+            position1row = piece[0].getPosition()[1] >= 0 ? String.valueOf(8 - piece[0].getPosition()[0]) : "0";
+            position2row = piece[1].getPosition()[1] >= 0 ? String.valueOf(8 - piece[1].getPosition()[0]) : "0";
+            
+            System.out.println(position1column +  position1row
+                    + "-" + position2column + position2row);
             this.manageListeners.sendToChessListeners(this.chess);
             return Response.ok().build();
         } else {
