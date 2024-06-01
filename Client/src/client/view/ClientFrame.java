@@ -1,6 +1,5 @@
 package client.view;
 
-import client.model.Chess;
 import client.model.Message;
 import client.model.Piece;
 import client.model.User;
@@ -89,7 +88,7 @@ public class ClientFrame extends JFrame {
     
     //</editor-fold>
 
-    public ClientFrame() { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    public ClientFrame() { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
@@ -120,7 +119,7 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
 
-    private void initComponents() { // <editor-fold defaultstate="collapsed" desc="OK">
+    private void initComponents() { // <editor-fold defaultstate="collapsed" desc="collapsed">
 
         mainPainel = new JPanel();
         
@@ -567,17 +566,17 @@ public class ClientFrame extends JFrame {
         pack();
     }// </editor-fold>                        
 
-    private void exitMenuItemActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK">
+    private void exitMenuItemActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed">
         
         if(myUser != null){
             leaveBtnActionPerformed(null);
-            System.out.println("Log out realizado.");
+//            System.out.println("Log out realizado.");
         }
         
         System.exit(0);
     }// </editor-fold>
     
-    private void sendBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK">
+    private void sendBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed">
 
         this.sendBtn.setEnabled(false);
         this.infoField.setText("");
@@ -597,7 +596,8 @@ public class ClientFrame extends JFrame {
             
             int codeResp = resp.getStatus();
             
-            System.out.println(resp.toString());
+//            System.out.println(resp.toString());
+            resp.close();
             
             if(codeResp == 204){
                 messageField.setText("");
@@ -607,13 +607,14 @@ public class ClientFrame extends JFrame {
                 }else{
                     if(codeResp == 404){
                         infoField.setText("Utilizador inválido.");
+                        closeGame("Please, enter a game.");
                     } else{
-                        infoField.setText("Error desconnhecido: "+ codeResp);
+                        System.out.println("Error desconnhecido: "+ codeResp);
+                        closeGame("Please, enter a game.");
                     }
                 }
             }
             
-            resp.close();
         }
         this.messageField.requestFocus();
             
@@ -621,20 +622,19 @@ public class ClientFrame extends JFrame {
         this.messageField.requestFocus();
     }// </editor-fold>
     
-    private void messageFieldKeyTyped(KeyEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void messageFieldKeyTyped(KeyEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         if (evt.getKeyChar() == '\n') {
             sendBtnActionPerformed(null);
         }
     }// </editor-fold>
 
-    private void portFieldKeyTyped(KeyEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void portFieldKeyTyped(KeyEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         if ( !Character.isDigit(evt.getKeyChar()) ) {
             evt.consume();
         }
     }// </editor-fold>
 
-    private void flipButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
-        System.out.println(evt.getActionCommand());
+    private void flipButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed">
         
         if(flipButtonOrganizer){
             namePlayer1.setHorizontalAlignment(SwingConstants.LEADING);
@@ -732,7 +732,8 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
     
-    private void flipBoard(){
+    private synchronized void flipBoard(){ // <editor-fold defaultstate="collapsed" desc="collapsed">
+        
         chessBoard.removeAll();
         if(flipButtonOrganizer) {
             for (int i = 0; i < 8; i++) {
@@ -748,9 +749,9 @@ public class ClientFrame extends JFrame {
             }
         }
         chessBoard.repaint();
-    }
+    }// </editor-fold>
 
-    private void observerButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void observerButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         erroField.setText("");
         User sendUser = new User();
         sendUser.setUsername(myUser.getUsername());
@@ -762,26 +763,28 @@ public class ClientFrame extends JFrame {
         
         int codeResp = resp.getStatus();
         
-        System.out.println(resp.toString());
+//        System.out.println(resp.toString());
                 
         if(codeResp == 200){
             myUser = resp.readEntity(User.class);
             
             decideBtns();
             startGame();
+            resp.close();
         } else{
+            resp.close();
             if(codeResp == 409){
                 erroField.setText("Vagas de jogadores preenchidas.");
             }
             else{
                 erroField.setText("Erro ao tornar observador|jogador.");
+                closeGame("Please, enter a game.");
             }
         }
         
-        resp.close();
     }// </editor-fold>
     
-    private void positionButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void positionButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         
         erroField.setText("");
         User sendUser = new User();
@@ -793,23 +796,24 @@ public class ClientFrame extends JFrame {
         
         int codeResp = resp.getStatus();
         
-        System.out.println(resp.toString());
+//        System.out.println(resp.toString());
                 
         if(codeResp == 200){
             myUser = resp.readEntity(User.class);
+            resp.close();
         } else{
+            resp.close();
             if(codeResp == 409){
                 erroField.setText("Vagas de jogador preenchida.");
             }
             else{
                 erroField.setText("Erro ao trocar posição.");
+                closeGame("Please, enter a game.");
             }
         }
-        
-        resp.close();
     }// </editor-fold>
     
-    private void cleanButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void cleanButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
                 
         erroField.setText("");
         Response resp = client.target(baseUri)
@@ -819,16 +823,16 @@ public class ClientFrame extends JFrame {
         
         int codeResp = resp.getStatus();
         
-        System.out.println(resp.toString());
+//        System.out.println(resp.toString());
+        resp.close();
                 
         if(codeResp != 204){
             erroField.setText("Erro ao limpar tabuleiro.");
+            closeGame("Please, enter a game.");
         }
-        
-        resp.close();
     }// </editor-fold>
     
-    private void rearrangeButtonActionPerformed(ActionEvent evt) {// <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void rearrangeButtonActionPerformed(ActionEvent evt) {// <editor-fold defaultstate="collapsed" desc="collapsed"> 
                 
         erroField.setText("");
         Response resp = client.target(baseUri)
@@ -838,16 +842,17 @@ public class ClientFrame extends JFrame {
         
         int codeResp = resp.getStatus();
         
-        System.out.println(resp.toString());
+//        System.out.println(resp.toString());
+        resp.close();
                 
         if(codeResp != 204){
             erroField.setText("Erro ao arrumar tabuleiro.");
+            closeGame("Please, enter a game.");
         }
         
-        resp.close();
     }// </editor-fold>
 
-    private void leaveBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void leaveBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
 
         erroField.setText("");
         
@@ -858,24 +863,32 @@ public class ClientFrame extends JFrame {
         int codeResp = resp.getStatus();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         
-        System.out.println(resp.toString());
+//        System.out.println(resp.toString());
         resp.close();
         
-        if(codeResp == 204){
-            
-            if(upChess != null && upChess.isAlive()){
+        if(codeResp == 204 ){
+            closeGame("Please, enter a game.");
+        } else{
+            erroField.setText("Erro :(");
+            System.out.println("Erro desconhecido on leave: "+codeResp);
+            closeGame("Please, enter a game.");
+        }
+    }// </editor-fold>
+    
+    private void closeGame(String message){
+        if(upChess != null && upChess.isAlive()){
                 upChess.interrupt();
-                if(upChess.isInterrupted()) System.out.println("Thread upChess interrompida.");
+//                if(upChess.isInterrupted()) System.out.println("Thread upChess interrompida.");
             }
 
             if(upUsers != null && upUsers.isAlive()){
                 upUsers.interrupt();
-                if(upUsers.isInterrupted()) System.out.println("Thread upUsers interrompida.");
+//                if(upUsers.isInterrupted()) System.out.println("Thread upUsers interrompida.");
             }
 
             if(upChat != null && upChat.isAlive()){
                 upChat.interrupt();
-                if(upChat.isInterrupted()) System.out.println("Thread upChat interrompida.");
+//                if(upChat.isInterrupted()) System.out.println("Thread upChat interrompida.");
             }
             
             chessBoard.removeAll();
@@ -909,7 +922,7 @@ public class ClientFrame extends JFrame {
             nameField.setEditable(true);
             nameField.setEnabled(true);
 
-            titleGame.setText("Please, enter a game.");
+            titleGame.setText(message);
             panelBtns.setVisible(false);
             messagesArea.setEnabled(false);
             messageField.setEditable(false);
@@ -918,14 +931,9 @@ public class ClientFrame extends JFrame {
             
             myUser = null;
             client.close();
-        } 
-        else{
-            erroField.setText("Erro :(");
-            System.out.println("Erro desconhecido on leave: "+codeResp);
-        }
-    }// </editor-fold>
+    }
 
-    private void joinBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void joinBtnActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
                 
         infoField.setText("");
         if(ipField.getText().isEmpty() || portField.getText().isEmpty() || nameField.getText().isEmpty()){
@@ -958,7 +966,7 @@ public class ClientFrame extends JFrame {
         
                 int codeResp = resp.getStatus();
 
-                System.out.println(resp.toString());
+//                System.out.println(resp.toString());
 
                 if(codeResp == 200){
 
@@ -1034,7 +1042,7 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
     
-    private void threadUsersAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void threadUsersAsync() { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         while (true) {
             Response resp = null;
             try{
@@ -1050,7 +1058,7 @@ public class ClientFrame extends JFrame {
             if(resp != null){
                 int codeResp = resp.getStatus();
 
-                System.out.println(resp.toString());
+//                System.out.println(resp.toString());
 
                 if(codeResp == 200){
                     List<User> users = resp.readEntity(new GenericType<List<User>>(){});
@@ -1064,7 +1072,7 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
     
-    private void threadChatAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void threadChatAsync() { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         while (true) { 
             Response resp = null;
             try{
@@ -1081,7 +1089,7 @@ public class ClientFrame extends JFrame {
             if(resp != null){
                 int codeResp = resp.getStatus();
 
-                System.out.println(resp.toString());
+//                System.out.println(resp.toString());
 
                 if(codeResp == 200){
                     Message msg = resp.readEntity(Message.class);
@@ -1095,7 +1103,7 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
     
-    private void threadGameAsync() { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void threadGameAsync() { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         while (true) { 
             Response resp = null;
             try{
@@ -1112,7 +1120,7 @@ public class ClientFrame extends JFrame {
             if(resp != null){
                 int codeResp = resp.getStatus();
 
-                System.out.println(resp.toString());
+//                System.out.println(resp.toString());
 
                 if(codeResp == 200){
                     List<Piece> chess = resp.readEntity(new GenericType<List<Piece>>(){});
@@ -1126,7 +1134,7 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
     
-    private void startGame() { // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void startGame() { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         erroField.setText("");
         Response resp = client.target(baseUri)
             .request()
@@ -1135,20 +1143,21 @@ public class ClientFrame extends JFrame {
         
         int codeResp = resp.getStatus();
         
-        System.out.println(resp.toString());
+//        System.out.println(resp.toString());
                 
         if(codeResp == 200){
             List<Piece> chess = resp.readEntity(new GenericType<List<Piece>>(){});
             setBoard(chess);
-        }
-        else{
+            resp.close();
+        } else{
+            resp.close();
             erroField.setText("Erro ao receber jogo.");
             System.out.println("Erro desconhecido on startGame: "+codeResp);
+            closeGame("Please, enter a game.");
         }
-        resp.close();
     }// </editor-fold>
 
-    private void decideBtns(){ // <editor-fold defaultstate="collapsed" desc="OK"> 
+    private void decideBtns(){ // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         if(myUser.isPlayer()){
             observerButton.setText("Turn observer");
             cleanButton.setVisible(true);
@@ -1165,7 +1174,7 @@ public class ClientFrame extends JFrame {
         }
     }// </editor-fold>
     
-    public void selected(SquarePanel sp) { // <editor-fold defaultstate="collapsed" desc="OK">
+    public void selected(SquarePanel sp) { // <editor-fold defaultstate="collapsed" desc="collapsed">
         erroField.setText("");
         Piece piece = sp.getPiece();
         
@@ -1174,37 +1183,40 @@ public class ClientFrame extends JFrame {
                 firstClick = sp;
             }
         } else{
-            if(piece.getType().length > 0 && piece.getType()[0] == firstClick.getPiece().getType()[0]){
-                firstClick = sp;
-            } else{
-                Piece[] send = new Piece[]{firstClick.getPiece(), piece};
-                
-                Response resp = client.target(baseUri)
-                    .path("pieces")
-                    .request()
-                    .accept("application/json")
-                    .put(Entity.json(send));
-                
-                int codeResp = resp.getStatus();
+            synchronized (firstClick) {
+                if(piece.getPosition().length > 0 && !piece.hasPosition(firstClick.getPiece().getPosition())){
+                    Piece[] send = new Piece[]{firstClick.getPiece(), piece};
 
-                System.out.println(resp.toString());
+                    Response resp = client.target(baseUri)
+                        .path("pieces")
+                        .request()
+                        .accept("application/json")
+                        .put(Entity.json(send));
 
-                if(codeResp == 200){
-                    firstClick = null;
-                }
-                else {
-                    if(codeResp == 409){
-                        erroField.setText("Movimento inválido.");
-                    } else{
-                        erroField.setText("Erro ao realizar jogada.");
-                        System.out.println("Erro desconhecido move piece: "+codeResp);
+                    int codeResp = resp.getStatus();
+
+    //                System.out.println(resp.toString());
+                    resp.close();
+
+                    if(codeResp == 200){
+                        firstClick = null;
+                    }
+                    else {
+                        if(codeResp == 409){
+                            erroField.setText("Movimento inválido.");
+                        } else{
+                            erroField.setText("Erro ao realizar jogada.");
+                            System.out.println("Erro desconhecido move piece: "+codeResp);
+                            closeGame("Please, enter a game.");
+                        }
                     }
                 }
             }
         }
     }// </editor-fold>
     
-    public void setBoard(List<Piece> chess){ // <editor-fold defaultstate="collapsed" desc="OK">
+    public synchronized void setBoard(List<Piece> chess){ // <editor-fold defaultstate="collapsed" desc="collapsed">
+        firstClick = null;
         chessBoard.removeAll();
         player1SpareBoard.removeAll();
         player2SpareBoard.removeAll();
@@ -1268,7 +1280,7 @@ public class ClientFrame extends JFrame {
         player2SpareBoard.repaint();
     }// </editor-fold>
     
-    public void setUsers(List<User> users, String usernameNewCliente){ // <editor-fold defaultstate="collapsed" desc="OK">
+    public void setUsers(List<User> users, String usernameNewCliente){ // <editor-fold defaultstate="collapsed" desc="collapsed">
         String observersName = "";
         namePlayer1.setText("Player 1");
         namePlayer2.setText("Player 2");
@@ -1290,7 +1302,7 @@ public class ClientFrame extends JFrame {
         observeField.setText(observersName);
     }//</editor-fold> 
     
-    public static void main(String args[]) { // <editor-fold defaultstate="collapsed" desc="OK">
+    public static void main(String args[]) { // <editor-fold defaultstate="collapsed" desc="collapsed">
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.

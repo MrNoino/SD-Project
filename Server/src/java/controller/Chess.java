@@ -71,14 +71,9 @@ public class Chess {
             if(p != null){
                 Piece f = getChessPiecebyPosition(future.getPosition());
                 if(f != null && future.getPosition()[0] != -1){
-                    if(p.getType()[0] != f.getType()[0]){
-                         p.setPosition(future.getPosition());
-                         f.setPosition(new byte[]{-1,-1});
-                         return -1; //OK
-                    } else{
-                        System.out.println("Error: peças de mesmo jogador");
-                        return 409; //Conflict
-                    }
+                    p.setPosition(future.getPosition());
+                    f.setPosition(new byte[]{-1,-1});
+                    return -1; //OK
                 }else{
                     p.setPosition(future.getPosition());
                     return -1;

@@ -26,6 +26,4 @@ public class Message {
     public String toString() {
         return user + ": " + content + "\n";
     }
-    
-    
 }
