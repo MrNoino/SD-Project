@@ -15,11 +15,6 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.ResponseProcessingException;
 import java.util.List;
 
-
-/**
- *
- * @author Karine Aparecida Braga Florencio - a2021106016 - ESTGOH - IPC
- */
 public class ClientFrame extends JFrame {
     
     // <editor-fold defaultstate="collapsed" desc="Variables declaration - View">
@@ -94,11 +89,10 @@ public class ClientFrame extends JFrame {
         setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
         setMinimumSize(new Dimension(1400,840));
         setResizable(true);
+        setTitle("Chess Game");
         
         initComponents();
         
-        ipField.setText("localhost");
-        portField.setText("8080");
         titleGame.setText("Please, enter a game.");
         titleGame.setForeground(new Color(51, 51, 51));
         sendBtn.setEnabled(false);
@@ -589,32 +583,41 @@ public class ClientFrame extends JFrame {
             msg.setContent(txt);
             msg.setUser(myUser.getUsername());
             
-            Response resp = client.target(baseUri+"chat/")
-                .request()
-                .accept("application/json")
-                .post(Entity.json(msg));
+            Response resp = null;
+            try {
+                resp = client.target(baseUri)
+                        .path("chat/")
+                        .request()
+                        .accept("application/json")
+                        .post(Entity.json(msg));
+            } catch (ProcessingException ex){
+//                System.out.println(ex);
+                closeGame("Sorry, enter a game.");
+            }
             
-            int codeResp = resp.getStatus();
+            if(resp != null){
             
-//            System.out.println(resp.toString());
-            resp.close();
-            
-            if(codeResp == 204){
-                messageField.setText("");
-            } else{
-                if(codeResp == 400){
-                    infoField.setText("Mensagem vazia.");
-                }else{
-                    if(codeResp == 404){
-                        infoField.setText("Utilizador inválido.");
-                        closeGame("Please, enter a game.");
-                    } else{
-                        System.out.println("Error desconnhecido: "+ codeResp);
-                        closeGame("Please, enter a game.");
+                int codeResp = resp.getStatus();
+
+//                System.out.println(resp.toString());
+                resp.close();
+
+                if(codeResp == 204){
+                    messageField.setText("");
+                } else{
+                    if(codeResp == 400){
+                        infoField.setText("Mensagem vazia.");
+                    }else{
+                        if(codeResp == 404){
+                            infoField.setText("Utilizador inválido.");
+                            closeGame("Please, enter a game.");
+                        } else{
+                            System.out.println("Error desconnhecido: "+ codeResp);
+                            closeGame("Please, enter a game.");
+                        }
                     }
                 }
             }
-            
         }
         this.messageField.requestFocus();
             
@@ -757,31 +760,40 @@ public class ClientFrame extends JFrame {
         sendUser.setUsername(myUser.getUsername());
         sendUser.setPlayer(!myUser.isPlayer());
         
-        Response resp = client.target(baseUri+"users/status")
-            .request()
-            .put(Entity.json(sendUser));
-        
-        int codeResp = resp.getStatus();
-        
-//        System.out.println(resp.toString());
-                
-        if(codeResp == 200){
-            myUser = resp.readEntity(User.class);
-            
-            decideBtns();
-            startGame();
-            resp.close();
-        } else{
-            resp.close();
-            if(codeResp == 409){
-                erroField.setText("Vagas de jogadores preenchidas.");
-            }
-            else{
-                erroField.setText("Erro ao tornar observador|jogador.");
-                closeGame("Please, enter a game.");
+        Response resp = null;
+        try {
+            resp = client.target(baseUri)
+                    .path("users/status")
+                    .request()
+                    .put(Entity.json(sendUser));
+        } catch (ProcessingException ex){
+//            System.out.println(ex);
+            closeGame("Sorry, enter a game.");
+        }
+
+        if(resp != null){
+
+            int codeResp = resp.getStatus();
+
+//            System.out.println(resp.toString());
+
+            if(codeResp == 200){
+                myUser = resp.readEntity(User.class);
+
+                decideBtns();
+                startGame();
+                resp.close();
+            } else{
+                resp.close();
+                if(codeResp == 409){
+                    erroField.setText("Vagas de jogadores indisponíveis.");
+                }
+                else{
+                    erroField.setText("Erro ao tornar observador|jogador.");
+                    closeGame("Please, enter a game.");
+                }
             }
         }
-        
     }// </editor-fold>
     
     private void positionButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
@@ -790,25 +802,35 @@ public class ClientFrame extends JFrame {
         User sendUser = new User();
         sendUser.setUsername(myUser.getUsername());
         
-        Response resp = client.target(baseUri+"users/position")
-            .request()
-            .put(Entity.json(sendUser));
+        Response resp = null;
+        try {
+            resp = client.target(baseUri)
+                    .path("users/position")
+                    .request()
+                    .put(Entity.json(sendUser));
+        } catch (ProcessingException ex){
+//            System.out.println(ex);
+            closeGame("Sorry, enter a game.");
+        }
+
+        if(resp != null){
         
-        int codeResp = resp.getStatus();
-        
-//        System.out.println(resp.toString());
-                
-        if(codeResp == 200){
-            myUser = resp.readEntity(User.class);
-            resp.close();
-        } else{
-            resp.close();
-            if(codeResp == 409){
-                erroField.setText("Vagas de jogador preenchida.");
-            }
-            else{
-                erroField.setText("Erro ao trocar posição.");
-                closeGame("Please, enter a game.");
+            int codeResp = resp.getStatus();
+
+//            System.out.println(resp.toString());
+
+            if(codeResp == 200){
+                myUser = resp.readEntity(User.class);
+                resp.close();
+            } else{
+                resp.close();
+                if(codeResp == 409){
+                    erroField.setText("Vaga de jogador indisponível.");
+                }
+                else{
+                    erroField.setText("Erro ao trocar posição.");
+                    closeGame("Please, enter a game.");
+                }
             }
         }
     }// </editor-fold>
@@ -816,38 +838,56 @@ public class ClientFrame extends JFrame {
     private void cleanButtonActionPerformed(ActionEvent evt) { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
                 
         erroField.setText("");
-        Response resp = client.target(baseUri)
-            .path("board/clean")
-            .request()
-            .put(Entity.text(""));
+        Response resp = null;
+        try {
+            resp = client.target(baseUri)
+                    .path("board/clean")
+                    .request()
+                    .put(Entity.text(""));
+        } catch (ProcessingException ex){
+//            System.out.println(ex);
+            closeGame("Sorry, enter a game.");
+        }
+
+        if(resp != null){
         
-        int codeResp = resp.getStatus();
-        
-//        System.out.println(resp.toString());
-        resp.close();
-                
-        if(codeResp != 204){
-            erroField.setText("Erro ao limpar tabuleiro.");
-            closeGame("Please, enter a game.");
+            int codeResp = resp.getStatus();
+
+//            System.out.println(resp.toString());
+            resp.close();
+
+            if(codeResp != 204){
+                erroField.setText("Erro ao limpar tabuleiro.");
+                closeGame("Please, enter a game.");
+            }
         }
     }// </editor-fold>
     
     private void rearrangeButtonActionPerformed(ActionEvent evt) {// <editor-fold defaultstate="collapsed" desc="collapsed"> 
                 
         erroField.setText("");
-        Response resp = client.target(baseUri)
-            .path("board/rearrange")
-            .request()
-            .put(Entity.text(""));
+        Response resp = null;
+        try {
+            resp = client.target(baseUri)
+                    .path("board/rearrange")
+                    .request()
+                    .put(Entity.text(""));
+        } catch (ProcessingException ex){
+//            System.out.println(ex);
+            closeGame("Sorry, enter a game.");
+        }
+
+        if(resp != null){
         
-        int codeResp = resp.getStatus();
-        
-//        System.out.println(resp.toString());
-        resp.close();
-                
-        if(codeResp != 204){
-            erroField.setText("Erro ao arrumar tabuleiro.");
-            closeGame("Please, enter a game.");
+            int codeResp = resp.getStatus();
+
+//            System.out.println(resp.toString());
+            resp.close();
+
+            if(codeResp != 204){
+                erroField.setText("Erro ao arrumar tabuleiro.");
+                closeGame("Please, enter a game.");
+            }
         }
         
     }// </editor-fold>
@@ -856,22 +896,32 @@ public class ClientFrame extends JFrame {
 
         erroField.setText("");
         
-        Response resp = client.target(baseUri+"users/")
-                              .path(myUser.getUsername())
-                              .request()
-                              .delete();
-        int codeResp = resp.getStatus();
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        
-//        System.out.println(resp.toString());
-        resp.close();
-        
-        if(codeResp == 204 ){
-            closeGame("Please, enter a game.");
-        } else{
-            erroField.setText("Erro :(");
-            System.out.println("Erro desconhecido on leave: "+codeResp);
-            closeGame("Please, enter a game.");
+        Response resp = null;
+        try {
+            resp = client.target(baseUri)
+                    .path("users")
+                    .path(myUser.getUsername())
+                    .request()
+                    .delete();
+        } catch (ProcessingException ex){
+//            System.out.println(ex);
+            closeGame("Sorry, enter a game.");
+        }
+
+        if(resp != null){
+            int codeResp = resp.getStatus();
+            setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+//            System.out.println(resp.toString());
+            resp.close();
+
+            if(codeResp == 204 ){
+                closeGame("Please, enter a game.");
+            } else{
+                erroField.setText("Erro :(");
+                System.out.println("Erro desconhecido on leave: "+codeResp);
+                closeGame("Please, enter a game.");
+            }
         }
     }// </editor-fold>
     
@@ -947,28 +997,28 @@ public class ClientFrame extends JFrame {
             // inicia conexão
             Response resp = null;
             try {
-                resp = client.target(baseUri+"users/")
-                .request()
-                .accept("application/json")
-                .post(Entity.json(newCliente));
+                resp = client.target(baseUri)
+                        .path("users/")
+                        .request()
+                        .accept("application/json")
+                        .post(Entity.json(newCliente));
             } catch (ResponseProcessingException ex){
-                System.out.println(ex);
+//                System.out.println(ex);
                 titleGame.setText("Erro :(");
                 titleGame.setForeground(new Color(255, 51, 51));
             } catch (IllegalArgumentException | ProcessingException ex){
-                System.out.println(ex);
+//                System.out.println(ex);
                 titleGame.setText("Erro ao encontrar servidor, rever endereço de servidor.");
                 titleGame.setForeground(new Color(255, 51, 51));
             }
 
             if(resp != null){
-                setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        
                 int codeResp = resp.getStatus();
 
 //                System.out.println(resp.toString());
 
                 if(codeResp == 200){
+                    setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
                     List<User> users = resp.readEntity(new GenericType<List<User>>(){});
                     setUsers(users, newCliente.getUsername());
@@ -1029,7 +1079,7 @@ public class ClientFrame extends JFrame {
                 }
                 else{
                     if( codeResp == 409){
-                        titleGame.setText("Nome inválido.");
+                        titleGame.setText("Nome de utilizador indisponível.");
                         titleGame.setForeground(new Color(255, 51, 51));
                     } else {
                         titleGame.setText("Erro :(");
@@ -1094,6 +1144,8 @@ public class ClientFrame extends JFrame {
                 if(codeResp == 200){
                     Message msg = resp.readEntity(Message.class);
                     messagesArea.append(msg.toString());
+                    JScrollBar sb = jScrollArea.getVerticalScrollBar();
+                    sb.setValue(sb.getMaximum());
                 }
                 else {
                     System.out.println("Erro desconhecido na threadChatAsync: "+codeResp);
@@ -1136,24 +1188,32 @@ public class ClientFrame extends JFrame {
     
     private void startGame() { // <editor-fold defaultstate="collapsed" desc="collapsed"> 
         erroField.setText("");
-        Response resp = client.target(baseUri)
-            .request()
-            .accept("application/json")
-            .get();
-        
-        int codeResp = resp.getStatus();
-        
-//        System.out.println(resp.toString());
-                
-        if(codeResp == 200){
-            List<Piece> chess = resp.readEntity(new GenericType<List<Piece>>(){});
-            setBoard(chess);
-            resp.close();
-        } else{
-            resp.close();
-            erroField.setText("Erro ao receber jogo.");
-            System.out.println("Erro desconhecido on startGame: "+codeResp);
-            closeGame("Please, enter a game.");
+        Response resp = null;
+        try {
+            resp = client.target(baseUri)
+                .request()
+                .accept("application/json")
+                .get();
+        } catch (ProcessingException ex){
+//            System.out.println(ex);
+            closeGame("Sorry, enter a game.");
+        }
+
+        if(resp != null){
+            int codeResp = resp.getStatus();
+
+//            System.out.println(resp.toString());
+
+            if(codeResp == 200){
+                List<Piece> chess = resp.readEntity(new GenericType<List<Piece>>(){});
+                setBoard(chess);
+                resp.close();
+            } else{
+                resp.close();
+                erroField.setText("Erro ao receber jogo.");
+                System.out.println("Erro desconhecido on startGame: "+codeResp);
+                closeGame("Please, enter a game.");
+            }
         }
     }// </editor-fold>
 
@@ -1187,27 +1247,36 @@ public class ClientFrame extends JFrame {
                 if(piece.getPosition().length > 0 && !piece.hasPosition(firstClick.getPiece().getPosition())){
                     Piece[] send = new Piece[]{firstClick.getPiece(), piece};
 
-                    Response resp = client.target(baseUri)
-                        .path("pieces")
-                        .request()
-                        .accept("application/json")
-                        .put(Entity.json(send));
-
-                    int codeResp = resp.getStatus();
-
-    //                System.out.println(resp.toString());
-                    resp.close();
-
-                    if(codeResp == 200){
-                        firstClick = null;
+                    Response resp = null;
+                    try {
+                        resp = client.target(baseUri)
+                            .path("pieces")
+                            .request()
+                            .accept("application/json")
+                            .put(Entity.json(send));
+                    } catch (ProcessingException ex){
+//                        System.out.println(ex);
+                        closeGame("Sorry, enter a game.");
                     }
-                    else {
-                        if(codeResp == 409){
-                            erroField.setText("Movimento inválido.");
-                        } else{
-                            erroField.setText("Erro ao realizar jogada.");
-                            System.out.println("Erro desconhecido move piece: "+codeResp);
-                            closeGame("Please, enter a game.");
+
+                    if(resp != null){
+
+                        int codeResp = resp.getStatus();
+
+//                        System.out.println(resp.toString());
+                        resp.close();
+
+                        if(codeResp == 200){
+                            firstClick = null;
+                        }
+                        else {
+                            if(codeResp == 409){
+                                erroField.setText("Movimento inválido.");
+                            } else{
+                                erroField.setText("Erro ao realizar jogada.");
+                                System.out.println("Erro desconhecido move piece: "+codeResp);
+                                closeGame("Please, enter a game.");
+                            }
                         }
                     }
                 }
